@@ -49,12 +49,13 @@
 Usage: (comint-histories-add-history history-name
           [:keyword [option]]...)
 
-:predicates    List of functions (that take zero args) who's conjunction
+:predicates    List of functions that take zero args who's conjunction
                determines the selection of this history.
 
-:filters       List of functions (that take one arg) that when invoked on the
-               comint input, if return non-nil, prevent the input from being
-               added to the history.
+:filters       List of regexp strings and functions that take one arg. If the
+               input matches any of the regexp's, or any of the functions return
+               non-nil when applied to the input, then the input is not added
+               to the history.
 
 :persist       If non-nil then save and load the history to/from a file.
 
@@ -157,9 +158,13 @@ non-nil when applied to `input', then do not insert `input' into the history."
     (let ((filtered))
       (catch 'loop
         (dolist (filter (plist-get (cdr history) :filters))
-          (when (funcall filter input)
-            (setq filtered t)
-            (throw 'loop t))))
+          (if (functionp filter)
+              (when (funcall filter input)
+                (setq filtered t)
+                (throw 'loop t))
+            (when (string-match-p filter input) ; regexp
+              (setq filtered t)
+              (throw 'loop t)))))
       (when (not filtered)
         (let ((ring (plist-get (cdr history) :history)))
           (when-let ((existing-idx (ring-member ring input)))
