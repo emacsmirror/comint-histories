@@ -18,7 +18,10 @@
 
 ;; This package provides functionality for defining multiple histories for
 ;; comint inputs. This is useful for dividing up histories for different
-;; programs run through comint buffers.
+;; programs run through comint buffers. Users can define custom histories via
+;; the comint-histories-add-history macro. Histories can be customized in
+;; various ways including their length, if they should persist across sessions,
+;; filters to prevent inputs from being added to the history, and more.
 
 ;; Please see https://github.com/NicholasBHubbard/comint-histories for more
 ;; information.
@@ -59,10 +62,10 @@ Usage: (comint-histories-add-history history-name
 :length        Maximum length of the history ring. Defaults to 100.
 
 :rtrim         If non-nil then trim beginning whitespace from the input before
-               adding to the history. Defaults to T.
+               adding attempting to add it to the history. Defaults to T.
 
 :ltrim         If non-nil then trim ending whitespace from the input before
-               adding to the history. Defaults to T."
+               attempting to add it to the history. Defaults to T."
   (declare (indent defun))
   (let* ((name (symbol-name name))
          (history (list :history nil ; a ring
