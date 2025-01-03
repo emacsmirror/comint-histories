@@ -85,12 +85,12 @@ Usage: (comint-histories-add-history history-name
             (error "Invalid history property: %s" prop)
           (setq history (plist-put history prop (eval val)))
           (setq props (cddr props)))))
-    (setf (plist-get history :history) (make-ring (plist-get history :length)))
-    (when (plist-get history :persist)
-      (comint-histories--load-history history 'insert))
-    `(progn
-       (setf (alist-get ,name comint-histories--histories nil 'remove #'string=) nil)
-       (push (cons ,name (quote ,history)) comint-histories--histories))))
+    (let ((history (cons name history)))
+      (setf (plist-get (cdr history) :history) (make-ring (plist-get (cdr history) :length)))
+      (when (plist-get (cdr history) :persist) (comint-histories--load-history history t))
+      `(progn
+         (setf (alist-get ,name comint-histories--histories nil 'remove #'string=) nil)
+         (push (quote ,history) comint-histories--histories)))))
 
 (defun comint-histories-search-history (&optional history)
   "Search a history with `completing-read'."
@@ -98,8 +98,10 @@ Usage: (comint-histories-add-history history-name
   (let ((history (or history (comint-histories--select-history))))
     (if (not history)
         (user-error "no history could be selected")
-      (completing-read (format "history (%s): " (car history))
-                       (ring-elements (plist-get (cdr history) :history))))))
+      (let ((completion-styles nil)
+            (completion-category-overrides nil))
+        (completing-read (format "history (%s): " (car history))
+                         (ring-elements (plist-get (cdr history) :history)))))))
 
 (defun comint-histories-get-prompt ()
   "Return the prompt for the comint buffer as a string."
