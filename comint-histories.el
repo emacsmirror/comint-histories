@@ -108,11 +108,12 @@ Usage: (comint-histories-add-history history-name
   (when (derived-mode-p 'comint-mode)
     (save-excursion
       (goto-char (point-max))
-      (let ((start (progn
-                     (re-search-backward comint-prompt-regexp nil t)
-                     (match-beginning 0)))
-            (end (match-end 0)))
-        (buffer-substring-no-properties start end)))))
+      (let ((prompt-start
+             (save-excursion
+               (re-search-backward comint-prompt-regexp nil t))))
+        (when prompt-start
+          (buffer-substring-no-properties
+           prompt-start (point)))))))
 
 (defun comint-histories--history-file (history)
   "Return the history file for `history', creating it if it doesn't exist."
