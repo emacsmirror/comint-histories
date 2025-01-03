@@ -134,7 +134,7 @@ Usage: (comint-histories-add-history history-name
 If `insert' is non-nil then insert the history into `history's history ring."
   (let* ((history-file (comint-histories--history-file history))
          (history-text (f-read-text history-file 'utf-8))
-         (lines (split-string history-text "\n" t)))
+         (lines (split-string history-text (format "%c" #x1F) t)))
     (when insert
       (dolist (x (reverse lines))
         (comint-histories--insert-into-history history x)))
@@ -148,7 +148,7 @@ If `insert' is non-nil then insert the history into `history's history ring."
          (text ""))
     (dolist (x (take (plist-get (cdr history) :length)
                      (delete-dups (append existing-history loaded-history))))
-      (setq text (concat text (format "%s\n" x))))
+      (setq text (concat text (format "%s%c" x #x1F))))
     (f-write-text text 'utf-8 history-file)))
 
 (defun comint-histories--insert-into-history (history input)
