@@ -104,10 +104,11 @@ Usage: (comint-histories-add-history history-name
   (let ((history (or history (comint-histories--select-history))))
     (if (not history)
         (user-error "no history could be selected")
-      (let ((completion-styles nil)
-            (completion-category-overrides nil))
-        (completing-read (format "history (%s): " (car history))
-                         (ring-elements (plist-get (cdr history) :history)))))))
+      (let ((history-val (completing-read (format "history (%s): " (car history)) (ring-elements (plist-get (cdr history) :history)) nil t)))
+        (goto-char (point-max))
+        (delete-region (comint-line-beginning-position) (point))
+        (insert history-val)
+        (goto-char (comint-line-beginning-position))))))
 
 (defun comint-histories-get-prompt ()
   "Return the prompt for the comint buffer as a string."
