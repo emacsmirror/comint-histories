@@ -119,7 +119,7 @@ be updated other than resizing it to the new :length."
         (goto-char (comint-line-beginning-position))))))
 
 (defun comint-histories-get-prompt ()
-  "Return the prompt for the comint buffer as a string."
+  "Return the latest comint prompt in the current buffer as a string."
   (when (derived-mode-p 'comint-mode)
     (save-excursion
       (goto-char (point-max))
