@@ -90,7 +90,7 @@ Usage: (comint-histories-add-history history-name
       (when (plist-get (cdr history) :persist) (comint-histories--load-history history t))
       `(progn
          (setf (alist-get ,name comint-histories--histories nil 'remove #'string=) nil)
-         (add-to-list comint-histories--histories (quote ,history) t)))))
+         (append comint-histories--histories (list (quote ,history)))))))
 
 (defun comint-histories-search-history (&optional history)
   "Search a history with `completing-read'."
