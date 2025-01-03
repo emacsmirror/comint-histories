@@ -84,7 +84,7 @@ Usage: (comint-histories-add-history history-name
       (setf (plist-get (cdr history) :history) (make-ring (plist-get (cdr history) :length)))
       (when (plist-get (cdr history) :persist) (comint-histories--load-history history t))
       `(progn
-         (setf (alist-get ,name comint-histories--histories nil 'remove #'string=) nil)
+         (setf (alist-get ,name comint-histories--histories nil 'remove #'equal) nil)
          (add-to-list 'comint-histories--histories (quote ,history) t)))))
 
 (defun comint-histories-search-history (&optional history)
