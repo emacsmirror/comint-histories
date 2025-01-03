@@ -17,7 +17,11 @@
 ;;; Commentary:
 
 ;; This package provides functionality for defining multiple histories for
-;; comint inputs.
+;; comint inputs. This is useful for dividing up histories for different
+;; programs run through comint buffers.
+
+;; Please see https://github.com/NicholasBHubbard/comint-histories for more
+;; information.
 
 ;;; Code:
 
@@ -145,7 +149,7 @@ If `insert' is non-nil then insert the history into `history's history ring."
          (loaded-history (comint-histories--load-history history))
          (text ""))
     (dolist (x (take (plist-get (cdr history) :length)
-                     (append existing-history loaded-history)))
+                     (delete-dups (append existing-history loaded-history))))
       (setq text (concat text (format "%s\n" x))))
     (f-write-text text 'utf-8 history-file)))
 
