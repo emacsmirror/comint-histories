@@ -19,6 +19,8 @@
 ;; This package provides functionality for defining multiple histories for
 ;; comint inputs.
 
+;;; Code:
+
 (require 'comint)
 (require 'cl-lib)
 (require 'seq)
