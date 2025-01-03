@@ -66,6 +66,7 @@ Usage: (comint-histories-add-history history-name
 
 :ltrim         If non-nil then trim ending whitespace from the input before
                attempting to add it to the history. Defaults to T."
+  (declare (indent defun))
   (let ((name (symbol-name name))
         (history (list :history nil
                        :predicates nil
