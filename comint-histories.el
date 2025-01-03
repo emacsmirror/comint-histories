@@ -34,7 +34,7 @@
 
 (defvar comint-histories-persist-dir
   (f-join user-emacs-directory "comint-histories")
-  "Directory to place saved histories.")
+  "Directory for storing saved histories.")
 
 (defvar comint-histories-global-filters nil
   "Filters to be implicitly added to all history :filters.")
