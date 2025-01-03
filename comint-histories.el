@@ -65,7 +65,15 @@ Usage: (comint-histories-add-history history-name
                adding attempting to add it to the history. Defaults to T.
 
 :ltrim         If non-nil then trim ending whitespace from the input before
-               attempting to add it to the history. Defaults to T."
+               attempting to add it to the history. Defaults to T.
+
+If a history with name NAME does not already exist in
+`comint-histories--histories', then the new one will be added to the end of
+`comint-histories--histories' (giving it lowest selection precedence), and it's
+history file will be loaded if :persist is non-nil. Otherwise if a history with
+name NAME does already exist in `comint-histories--histories' then it's settings
+ will be updated to the new definition, but it's existing history ring will not
+be updated other than resizing it to the new :length."
   (declare (indent defun))
   (let ((name (symbol-name name))
         (history (list :history nil
@@ -99,7 +107,7 @@ Usage: (comint-histories-add-history history-name
     '(ignore)))
 
 (defun comint-histories-search-history (&optional history)
-  "Search a history with `completing-read'."
+  "Search a history with `completing-read' and insert the selection."
   (interactive)
   (let ((history (or history (comint-histories--select-history))))
     (if (not history)
