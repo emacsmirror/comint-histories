@@ -209,18 +209,10 @@ This function is used as advice aroung `comint-send-input' when
     (if (not proc)
         (user-error "Current buffer has no process")
       (when-let ((history (comint-histories--select-history)))
-        (widen)
-        (let* ((pmark (process-mark proc))
-               (input (if (>= (point) (marker-position pmark))
-                          (progn (if comint-eol-on-send
-                                     (if comint-use-prompt-regexp
-                                         (end-of-line)
-                                       (goto-char (field-end))))
-                                 (buffer-substring pmark (point)))
-                        (let ((copy (funcall comint-get-old-input)))
-                          (goto-char pmark)
-                          (insert copy)
-                          copy))))
+        (goto-char (point-max))
+        (let* ((beg-point (comint-line-beginning-position))
+               (end-point (point-max))
+               (input (buffer-substring-no-properties beg-point end-point)))
           (comint-histories--insert-into-history history input))))))
 
 (defun comint-histories--save-histories ()
