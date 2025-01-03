@@ -27,24 +27,14 @@
 
 (require 'comint)
 (require 'cl-lib)
-(require 'seq)
 (require 'f)
 
 (defvar comint-histories-persist-dir
   (f-join user-emacs-directory "comint-histories")
   "Directory to place saved histories.")
 
-(defvar comint-histories-default-persist t
-  "Default :persist value for a history.")
-
-(defvar comint-histories-default-length 500
-  "Default :length value for a history.")
-
-(defvar comint-histories-default-rtrim t
-  "Default :rtrim value for a history.")
-
-(defvar comint-histories-default-ltrim t
-  "Default :ltrim value for a history")
+(defvar comint-histories-global-filters nil
+  "Filters to be implicitly added to all history :filters.")
 
 (defvar comint-histories--histories nil
   "Internal alist of plists containing all defined histories.")
@@ -64,23 +54,24 @@ Usage: (comint-histories-add-history history-name
                to the history.
 
 :persist       If non-nil then save and load the history to/from a file.
+               Defaults to T.
 
-:length        Maximum length of the history ring.
+:length        Maximum length of the history ring. Defaults to 100.
 
 :rtrim         If non-nil then trim beginning whitespace from the input before
-               adding to the history.
+               adding to the history. Defaults to T.
 
 :ltrim         If non-nil then trim ending whitespace from the input before
-               adding to the history."
+               adding to the history. Defaults to T."
   (declare (indent defun))
   (let* ((name (symbol-name name))
          (history (list :history nil ; a ring
                         :predicates nil
                         :filters nil
-                        :persist comint-histories-default-persist
-                        :length comint-histories-default-length
-                        :rtrim comint-histories-default-rtrim
-                        :ltrim comint-histories-default-ltrim))
+                        :persist t
+                        :length 100
+                        :rtrim t
+                        :ltrim t))
          (valid-props '(:predicates :filters :persist :length :rtrim :ltrim)))
     (while props
       (let ((prop (car props))
@@ -165,7 +156,8 @@ non-nil when applied to `input', then do not insert `input' into the history."
   (unless (string-empty-p input)
     (let ((filtered))
       (catch 'loop
-        (dolist (filter (plist-get (cdr history) :filters))
+        (dolist (filter (append comint-histories-global-filters
+                                (plist-get (cdr history) :filters)))
           (if (functionp filter)
               (when (funcall filter input)
                 (setq filtered t)
