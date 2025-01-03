@@ -137,9 +137,8 @@ If `insert' is non-nil then insert the history into `history's history ring."
          (history-text (f-read-text history-file 'utf-8))
          (lines (split-string history-text "\n" t)))
     (when insert
-      (let ((ring (plist-get (cdr history) :history)))
-        (dolist (x (reverse lines))
-          (ring-insert ring x))))
+      (dolist (x (reverse lines))
+        (comint-histories--insert-into-history history x)))
     lines))
 
 (defun comint-histories--save-history (history)
