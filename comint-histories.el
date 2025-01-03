@@ -123,8 +123,9 @@ be updated other than resizing it to the new :length."
   (when (derived-mode-p 'comint-mode)
     (save-excursion
       (goto-char (point-max))
-      (let ((prompt-end (comint-line-beginning-position)))
-        (forward-line 0)
+      (let ((prompt-end (comint-line-beginning-position))
+            (inhibit-field-text-motion t))
+        (beginning-of-line)
         (buffer-substring-no-properties (point) prompt-end)))))
 
 (defun comint-histories--history-file (history)
