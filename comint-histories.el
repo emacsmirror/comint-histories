@@ -66,16 +66,15 @@ Usage: (comint-histories-add-history history-name
 
 :ltrim         If non-nil then trim ending whitespace from the input before
                attempting to add it to the history. Defaults to T."
-  (declare (indent defun))
-  (let* ((name (symbol-name name))
-         (history (list :history nil ; a ring
-                        :predicates nil
-                        :filters nil
-                        :persist t
-                        :length 100
-                        :rtrim t
-                        :ltrim t))
-         (valid-props '(:predicates :filters :persist :length :rtrim :ltrim)))
+  (let ((name (symbol-name name))
+        (history (list :history nil
+                       :predicates nil
+                       :filters nil
+                       :persist t
+                       :length 100
+                       :rtrim t
+                       :ltrim t))
+        (valid-props '(:predicates :filters :persist :length :rtrim :ltrim)))
     (while props
       (let ((prop (car props))
             (val (cadr props)))
@@ -86,11 +85,17 @@ Usage: (comint-histories-add-history history-name
     (when (eq nil (plist-get history :predicates))
       (user-error ":predicates cannot be NIL"))
     (let ((history (cons name history)))
-      (setf (plist-get (cdr history) :history) (make-ring (plist-get (cdr history) :length)))
-      (when (plist-get (cdr history) :persist) (comint-histories--load-history history t))
-      `(progn
-         (setf (alist-get ,name comint-histories--histories nil 'remove #'equal) nil)
-         (add-to-list 'comint-histories--histories (quote ,history) t)))))
+      (if-let ((existing-history (assoc (car history) comint-histories--histories)))
+          (let ((existing-ring (plist-get (cdr existing-history) :history))
+                (new-length (plist-get (cdr history) :length)))
+            (ring-resize existing-ring new-length)
+            (setq history (cons (car history) (plist-put (cdr history) :history existing-ring)))
+            (setf (cdr (assoc (car history) comint-histories--histories)) (cdr history)))
+        (setf (plist-get (cdr history) :history) (make-ring (plist-get (cdr history) :length)))
+        (when (plist-get (cdr history) :persist)
+          (comint-histories--load-history history t))
+        (add-to-list 'comint-histories--histories history t)))
+    '(ignore)))
 
 (defun comint-histories-search-history (&optional history)
   "Search a history with `completing-read'."
