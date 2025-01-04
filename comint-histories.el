@@ -224,7 +224,7 @@ with zero arguments."
           (throw 'loop t))))
     selected-history))
 
-(defun comint-histories--process-comint-input ()
+(defun comint-histories--process-comint-input (&rest _)
   "Process the current comint input buffer, potentially adding it to a history.
 
 This function is used as advice aroung `comint-send-input' when
