@@ -93,9 +93,7 @@ This is a helper function that returns the current prompt in the comint buffer. 
 
 #### comint-histories-global-filters
 
-A list of global filters to be used as a filter for every history. Here is an example usage that prevents and input of length less or equal to 3 from entering a history:
-
-It is probably wise to disable most completion sorting functionality as you will want to 
+A list of global filters to be used as a filter for every history. Here is an example usage that prevents an input of length less or equal to 3 from entering any history:
 
 ```
 (add-to-list 'comint-histories-global-filters #'(lambda (input) (<= (length input) 3)))
