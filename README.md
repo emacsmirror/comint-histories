@@ -69,6 +69,7 @@ This is the only interactive function provided by comint-histories and allows yo
 
 Many packages will sort the candidates for `completing-read`, however you almost certainly do not want your histories sorted as they are already in order of newest entries to oldest. For this reason the following keybinding is recommended for using `comint-histories-search-history`.
 
+```
 (define-key comint-mode-map "C-r" #'(lambda () (interactive)))
 ```
 
