@@ -247,7 +247,6 @@ This function is used as advice aroung `comint-send-input' when
 
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
-  :require 'comint-histories
   :global t
   (if comint-histories-mode
       (progn
