@@ -30,6 +30,7 @@
 
 (require 'comint)
 (require 'cl-lib)
+(require 'seq)
 (require 'f)
 
 (defvar comint-histories-persist-dir
@@ -163,8 +164,8 @@ If `insert' is non-nil then insert the history into `history's history ring."
          (existing-history (ring-elements (plist-get (cdr history) :history)))
          (loaded-history (comint-histories--load-history history))
          (text ""))
-    (dolist (x (take (plist-get (cdr history) :length)
-                     (delete-dups (append existing-history loaded-history))))
+    (dolist (x (seq-take (delete-dups (append existing-history loaded-history))
+                         (plist-get (cdr history) :length)))
       (setq text (concat text (format "%s%c" x #x1F))))
     (f-write-text text 'utf-8 history-file)))
 
