@@ -2,9 +2,9 @@
 
 ## Overview
 
-comint-histories allows you to to create separate histories for different comint inputs. This is useful if you use comint-mode to run different programs, and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the history.
+comint-histories allows you to to create separate histories for different comint inputs. This is useful if you use comint-mode to run different programs and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the history.
 
-Say for example you use `M-x shell` as your shell, but you also use it to run python repls and use gdb. You could have three histories, one for shell inputs, one for python inputs, and another for gdb inputs. Each of these histories could have different lengths and policies for what input is allowed in the history.
+Say, for example, you use `M-x shell` as your shell, but you also use it to run python repls and use gdb. You could have three histories, one for shell inputs, one for python inputs, and another for gdb inputs. Each of these histories could have different lengths and policies for what input is allowed in the history.
 
 To use comint-histories you must turn on the global minor mode `comint-histories-mode`:
 
@@ -39,7 +39,7 @@ Here is the docstring for `comint-histories-add-history`:
 Usage: (comint-histories-add-history history-name
           [:keyword [option]]...)
 
-:predicates    List of functions that take zero args who's conjunction
+:predicates    List of functions that take zero args whose conjunction
                determines the selection of this history.
 
 :filters       List of regexp strings and functions that take one arg. If the
@@ -47,21 +47,21 @@ Usage: (comint-histories-add-history history-name
                non-nil when applied to the input, then the input is not added
                to the history.
 
-:persist       If non-nil then save and load the history to/from a file.
+:persist       If non-nil, then save and load the history to/from a file.
                Defaults to T.
 
 :length        Maximum length of the history ring. Defaults to 100.
 
-:rtrim         If non-nil then trim beginning whitespace from the input before
+:rtrim         If non-nil, then trim beginning whitespace from the input before
                adding attempting to add it to the history. Defaults to T.
 
-:ltrim         If non-nil then trim ending whitespace from the input before
+:ltrim         If non-nil, then trim ending whitespace from the input before
                attempting to add it to the history. Defaults to T.
 
 If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
 `comint-histories--histories' (giving it lowest selection precedence), and it's
-history file will be loaded if :persist is non-nil. Otherwise if a history with
+history file will be loaded if :persist is non-nil. Otherwise, if a history with
 name NAME does already exist in `comint-histories--histories' then it's settings
  will be updated to the new definition, but it's existing history ring will not
 be updated other than resizing it to the new :length."
@@ -69,7 +69,7 @@ be updated other than resizing it to the new :length."
 
 #### comint-histories-search-history
 
-This is the only interactive function provided by comint-histories and allows you to browse a history with `completing-read` to select and insert a history item. If called with prefix arg then the user is prompted to select a history with completing-read, otherwise automatic selection is made.
+This is the only interactive function provided by comint-histories and allows you to browse a history with `completing-read` to select and insert a history item. If called with prefix arg then the user is prompted to select a history with `completing-read`, otherwise automatic selection is made.
 
 Many packages will sort the candidates for `completing-read`, however you almost certainly do not want your histories sorted as they are already in order of newest entries to oldest. For this reason a binding similar to the following is recommended for using `comint-histories-search-history`.
 
