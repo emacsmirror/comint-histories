@@ -1,14 +1,16 @@
 # comint-histories
 
-## overview
+## Overview
 
 comint-histories allows you to to create seperate histories for different comint inputs. This is useful if you use comint-mode to run different programs, and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the history.
 
-Say for example you use `M-x shell` as your shell, but you also use it to run python repls. You could have two histories, one for bash inputs and another for python inputs. Each of these histories could have different lengths and policies for what input is allowed in the history.
+Say for example you use `M-x shell` as your shell, but you also use it to run python repls. You could have two histories, one for shell inputs and another for python inputs. Each of these histories could have different lengths and policies for what input is allowed in the history.
 
 The two primary components of comint-histories are `comint-histories-add-history` and `comint-histories-search-history`. The next sections will explain these in detail.
 
-## comint-histories-add-history
+## Functions
+
+#### comint-histories-add-history
 
 To define a new history you use `comint-histories-add-history`. Here is an example usage:
 
@@ -61,4 +63,31 @@ name NAME does already exist in `comint-histories--histories' then it's settings
 be updated other than resizing it to the new :length."
 ```
 
+#### comint-histories-search-history
+
+This is the only interactive function provided by comint-histories and allows you to browse a history with `completing-read` to select and insert a history item. If called with prefix arg then the user is prompted to select a history with completing-read, otherwise automatic selection is made.
+
+Many packages will sort the candidates for `completing-read`, however you almost certainly do not want your histories sorted as they are already in order of newest entries to oldest. For this reason the following keybinding is recommended for using `comint-histories-search-history`.
+
+(define-key comint-mode-map "C-r" #'(lambda () (interactive)))
+```
+
 It is important to note that if you define multiple histories who's :predicates may be satisfied simultaneously, then the history that was first defined takes precedence when making the selection.
+
+#### comint-histories-get-prompt
+
+This is a helper function that returns the current prompt in the comint buffer. This function exists because it is very likely that users will want to define history `:predicates` based on the comint prompt.
+
+## Variables
+
+#### comint-histories-global-filters
+
+A list of global filters to be used as a filter for every history. Here is an example usage that prevents and input of length less or equal to 3 from entering a history:
+
+```
+(add-to-list 'comint-histories-global-filters #'(lambda (input) (<= (length input) 3)))
+```
+
+#### comint-histories-persist-dir
+
+Directory to place history files for persistent histories.
