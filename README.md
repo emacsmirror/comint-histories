@@ -43,6 +43,7 @@ Usage: (comint-histories-add-history history-name
                determines the selection of this history.
 
 :filters       List of regexp strings and functions that take one arg. If the
+
                input matches any of the regexp's, or any of the functions return
                non-nil when applied to the input, then the input is not added
                to the history.
@@ -69,9 +70,9 @@ will not be updated other than resizing it to the new :length."
 
 #### comint-histories-search-history
 
-This is the only interactive function provided by comint-histories and allows you to browse a history with `completing-read` to select and insert a history item. If called with prefix arg then the user is prompted to select a history with `completing-read`, otherwise automatic selection is made.
+This is the only interactive function provided by comint-histories and allows you to browse a history with `completing-read` to select and insert a history item. If called with prefix arg, then the user is prompted to select a history with `completing-read`, otherwise automatic selection is made.
 
-Many packages will sort the candidates for `completing-read`, however you almost certainly do not want your histories sorted as they are already in order of newest entries to oldest. For this reason a binding similar to the following is recommended for using `comint-histories-search-history`.
+Many packages will sort the candidates for `completing-read`, however, you almost certainly do not want your histories sorted as they are already in order of newest entries to oldest. For this reason, a binding similar to the following is recommended for using `comint-histories-search-history`.
 
 ```
 (define-key comint-mode-map (kbd "C-r") #'(lambda () (interactive)
