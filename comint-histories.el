@@ -1,4 +1,4 @@
-;;; comint-histories.el --- Multiple comint histories  -*- lexical-binding: t; -*-
+;;; comint-histories.el --- Many comint histories  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025 Nicholas Hubbard <nicholashubbard@posteo.net>
 ;;
@@ -17,9 +17,9 @@
 ;;; Commentary:
 
 ;; This package provides functionality for defining multiple histories for
-;; comint inputs. This is useful for dividing up histories for different
-;; programs run through comint buffers. Users can define custom histories via
-;; the comint-histories-add-history macro. Histories can be customized in
+;; comint inputs.  This is useful for dividing up histories for different
+;; programs run through comint buffers.  Users can define custom histories via
+;; the comint-histories-add-history macro.  Histories can be customized in
 ;; various ways including their length, if they should persist across sessions,
 ;; filters to prevent inputs from being added to the history, and more.
 
@@ -52,7 +52,7 @@ Usage: (comint-histories-add-history history-name
 :predicates    List of functions that take zero args who's conjunction
                determines the selection of this history.
 
-:filters       List of regexp strings and functions that take one arg. If the
+:filters       List of regexp strings and functions that take one arg.  If the
                input matches any of the regexp's, or any of the functions return
                non-nil when applied to the input, then the input is not added
                to the history.
@@ -60,19 +60,19 @@ Usage: (comint-histories-add-history history-name
 :persist       If non-nil, then save and load the history to/from a file.
                Defaults to T.
 
-:length        Maximum length of the history ring. Defaults to 100.
+:length        Maximum length of the history ring.  Defaults to 100.
 
 :rtrim         If non-nil, then trim beginning whitespace from the input before
-               adding attempting to add it to the history. Defaults to T.
+               adding attempting to add it to the history.  Defaults to T.
 
 :ltrim         If non-nil, then trim ending whitespace from the input before
-               attempting to add it to the history. Defaults to T.
+               attempting to add it to the history.  Defaults to T.
 
 If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
 `comint-histories--histories' (giving it lowest selection precedence), and it's
-history file will be loaded if :persist is non-nil. Otherwise, if a history with
-name NAME does already exist in `comint-histories--histories', then it's
+history file will be loaded if :persist is non-nil.  Otherwise, if a history
+with name NAME does already exist in `comint-histories--histories', then it's
 settings will be updated to the new definition, but it's existing history ring
 will not be updated other than resizing it to the new :length."
   (declare (indent defun))
@@ -95,13 +95,18 @@ will not be updated other than resizing it to the new :length."
     (when (eq nil (plist-get history :predicates))
       (user-error ":predicates cannot be NIL"))
     (let ((history (cons name history)))
-      (if-let ((existing-history (assoc (car history) comint-histories--histories)))
+      (if-let ((existing-history (assoc (car history)
+                                        comint-histories--histories)))
           (let ((existing-ring (plist-get (cdr existing-history) :history))
                 (new-length (plist-get (cdr history) :length)))
             (ring-resize existing-ring new-length)
-            (setq history (cons (car history) (plist-put (cdr history) :history existing-ring)))
-            (setf (cdr (assoc (car history) comint-histories--histories)) (cdr history)))
-        (setf (plist-get (cdr history) :history) (make-ring (plist-get (cdr history) :length)))
+            (setq history (cons (car history)
+                                (plist-put (cdr history)
+                                           :history existing-ring)))
+            (setf (cdr (assoc (car history) comint-histories--histories))
+                  (cdr history)))
+        (setf (plist-get (cdr history) :history)
+              (make-ring (plist-get (cdr history) :length)))
         (when (plist-get (cdr history) :persist)
           (comint-histories--load-history history t))
         (add-to-list 'comint-histories--histories history t)))
@@ -115,12 +120,19 @@ automatically select the history."
   (interactive "P")
   (let ((history (or history
                      (if arg
-                         (let ((history-name (completing-read "histories: " (mapcar #'car comint-histories--histories) nil t)))
+                         (let ((history-name
+                                (completing-read
+                                 "histories: "
+                                 (mapcar #'car comint-histories--histories)
+                                 nil t)))
                            (assoc history-name comint-histories--histories))
                        (comint-histories--select-history)))))
     (if (not history)
-        (user-error "no history could be selected")
-      (let ((history-val (completing-read (format "history (%s): " (car history)) (ring-elements (plist-get (cdr history) :history)) nil t)))
+        (user-error "No history could be selected")
+      (let ((history-val (completing-read
+                          (format "history (%s): " (car history))
+                          (ring-elements (plist-get (cdr history) :history))
+                          nil t)))
         (goto-char (point-max))
         (delete-region (comint-line-beginning-position) (point))
         (insert history-val)
@@ -137,7 +149,7 @@ automatically select the history."
         (buffer-substring-no-properties (point) prompt-end)))))
 
 (defun comint-histories--history-file (history)
-  "Return the history file for `history', creating it if it doesn't exist."
+  "Return the history-file for HISTORY, creating it if it doesn't exist."
   (let* ((dir (f-join user-emacs-directory "comint-histories"))
          (file (f-join dir (car history))))
     (when (not (f-directory? dir))
@@ -147,9 +159,9 @@ automatically select the history."
     file))
 
 (defun comint-histories--load-history (history &optional insert)
-  "Load the history from `history's persistent file and return it as a list.
+  "Load the history-ring from HISTORY's persistent file returning it as a list.
 
-If `insert' is non-nil then insert the history into `history's history ring."
+If INSERT is non-nil then insert the history into HISTORY's history ring."
   (let* ((history-file (comint-histories--history-file history))
          (history-text (f-read-text history-file 'utf-8))
          (lines (split-string history-text (format "%c" #x1F) t)))
@@ -159,7 +171,7 @@ If `insert' is non-nil then insert the history into `history's history ring."
     lines))
 
 (defun comint-histories--save-history (history)
-  "Save `history's history ring to it's persistent file."
+  "Save HISTORY's history-ring to it's persistent file."
   (let* ((history-file (comint-histories--history-file history))
          (existing-history (ring-elements (plist-get (cdr history) :history)))
          (loaded-history (comint-histories--load-history history))
@@ -170,11 +182,12 @@ If `insert' is non-nil then insert the history into `history's history ring."
     (f-write-text text 'utf-8 history-file)))
 
 (defun comint-histories--insert-into-history (history input)
-  "Insert `input' into `history's history ring.
+  "Insert INPUT into HISTORY's history-ring.
 
-If `history' has its :ltrim or :rtrim props set the trim the leading/trailing
-whitespace from `input' before processing. If and of `history's :filter's return
-non-nil when applied to `input', then do not insert `input' into the history."
+If HISTORY has its :ltrim or :rtrim props set the trim the leading/trailing
+whitespace from INPUT before processing.  If any of HISTORY's :filter's
+return non-nil when applied to INPUT, then do not insert INPUT into the
+history."
   (when (plist-get (cdr history) :ltrim)
     (setq input (replace-regexp-in-string "^[\n ]+" "" input)))
   (when (plist-get (cdr history) :rtrim)
@@ -198,7 +211,10 @@ non-nil when applied to `input', then do not insert `input' into the history."
           (ring-insert ring input))))))
 
 (defun comint-histories--select-history ()
-  "Select a history from `comint-histories--histories'."
+  "Select a history from `comint-histories--histories'.
+
+A history is selected if all of it's :predicates return non-nil when invoked
+with zero arguments."
   (let ((selected-history))
     (catch 'loop
       (dolist (history comint-histories--histories)
@@ -235,7 +251,8 @@ This function is used as advice aroung `comint-send-input' when
   :global t
   (if comint-histories-mode
       (progn
-        (advice-add 'comint-send-input :before #'comint-histories--process-comint-input)
+        (advice-add 'comint-send-input :before
+                    #'comint-histories--process-comint-input)
         (add-hook 'kill-emacs-hook #'comint-histories--save-histories))
     (advice-remove 'comint-send-input #'comint-histories--process-comint-input)
     (remove-hook 'kill-emacs-hook #'comint-histories--save-histories)))
