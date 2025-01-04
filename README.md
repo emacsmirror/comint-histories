@@ -110,10 +110,10 @@ Here is a slightly modified version of my current configuration for comint-histo
 
 ```
 (use-package comint-histories
-  :custom
-  (comint-histories-global-filters '((lambda (x) (<= (length x) 3))))
   :config
   (comint-histories-mode 1)
+
+  (setq comint-histories-global-filters '((lambda (x) (<= (length x) 3))))
 
   (comint-histories-add-history gdb
     :predicates '((lambda () (string-match-p "^(gdb)" (comint-histories-get-prompt))))
