@@ -106,10 +106,17 @@ be updated other than resizing it to the new :length."
         (add-to-list 'comint-histories--histories history t)))
     '(ignore)))
 
-(defun comint-histories-search-history (&optional history)
-  "Search a history with `completing-read' and insert the selection."
-  (interactive)
-  (let ((history (or history (comint-histories--select-history))))
+(defun comint-histories-search-history (arg &optional history)
+  "Search the HISTORY with `completing-read' and insert the selection.
+
+If HISTORY is NIL then if ARG (or prefix arg) prompt for a history else
+automatically select the history."
+  (interactive "P")
+  (let ((history (or history
+                     (if arg
+                         (let ((history-name (completing-read "histories: " (mapcar #'car comint-histories--histories) nil t)))
+                           (assoc history-name comint-histories--histories))
+                       (comint-histories--select-history)))))
     (if (not history)
         (user-error "no history could be selected")
       (let ((history-val (completing-read (format "history (%s): " (car history)) (ring-elements (plist-get (cdr history) :history)) nil t)))
