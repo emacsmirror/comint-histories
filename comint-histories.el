@@ -57,24 +57,24 @@ Usage: (comint-histories-add-history history-name
                non-nil when applied to the input, then the input is not added
                to the history.
 
-:persist       If non-nil then save and load the history to/from a file.
+:persist       If non-nil, then save and load the history to/from a file.
                Defaults to T.
 
 :length        Maximum length of the history ring. Defaults to 100.
 
-:rtrim         If non-nil then trim beginning whitespace from the input before
+:rtrim         If non-nil, then trim beginning whitespace from the input before
                adding attempting to add it to the history. Defaults to T.
 
-:ltrim         If non-nil then trim ending whitespace from the input before
+:ltrim         If non-nil, then trim ending whitespace from the input before
                attempting to add it to the history. Defaults to T.
 
 If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
 `comint-histories--histories' (giving it lowest selection precedence), and it's
-history file will be loaded if :persist is non-nil. Otherwise if a history with
-name NAME does already exist in `comint-histories--histories' then it's settings
- will be updated to the new definition, but it's existing history ring will not
-be updated other than resizing it to the new :length."
+history file will be loaded if :persist is non-nil. Otherwise, if a history with
+name NAME does already exist in `comint-histories--histories', then it's
+settings will be updated to the new definition, but it's existing history ring
+will not be updated other than resizing it to the new :length."
   (declare (indent defun))
   (let ((name (symbol-name name))
         (history (list :history nil

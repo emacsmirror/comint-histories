@@ -39,7 +39,7 @@ Here is the docstring for `comint-histories-add-history`:
 Usage: (comint-histories-add-history history-name
           [:keyword [option]]...)
 
-:predicates    List of functions that take zero args whose conjunction
+:predicates    List of functions that take zero args who's conjunction
                determines the selection of this history.
 
 :filters       List of regexp strings and functions that take one arg. If the
@@ -62,9 +62,9 @@ If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
 `comint-histories--histories' (giving it lowest selection precedence), and it's
 history file will be loaded if :persist is non-nil. Otherwise, if a history with
-name NAME does already exist in `comint-histories--histories' then it's settings
- will be updated to the new definition, but it's existing history ring will not
-be updated other than resizing it to the new :length."
+name NAME does already exist in `comint-histories--histories', then it's
+settings will be updated to the new definition, but it's existing history ring
+will not be updated other than resizing it to the new :length."
 ```
 
 #### comint-histories-search-history
