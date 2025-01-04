@@ -105,7 +105,7 @@ Directory to place history files for persistent histories.
 
 ## Example configuration
 
-Here is a slightly modified version my current configuration for comint-histories:
+Here is a slightly modified version of my current configuration for comint-histories:
 
 ```
 (use-package comint-histories
