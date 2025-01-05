@@ -92,7 +92,7 @@ will not be updated other than resizing it to the new :length."
             (user-error "Invalid history property: %s" prop)
           (setq history (plist-put history prop (eval val)))
           (setq props (cddr props)))))
-    (when (eq nil (plist-get history :predicates))
+    (when (null (plist-get history :predicates))
       (user-error ":predicates cannot be NIL"))
     (let ((history- (cons name history)))
       `(let ((history (quote ,history-)))
