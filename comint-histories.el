@@ -8,7 +8,7 @@
 
 ;; Author: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; URL: https://github.com/NicholasBHubbard/comint-histories
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
 ;; Version: 1.0
 ;; Created: 2025-01-02
 ;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
