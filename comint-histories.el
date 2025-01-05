@@ -249,6 +249,7 @@ This function is used as advice aroung `comint-send-input' when
   "Toggle `comint-histories-mode'."
   :global t
   :group 'comint-histories
+  :require 'comint-histories
   (if comint-histories-mode
       (progn
         (advice-add 'comint-send-input :before
