@@ -12,7 +12,7 @@
 ;; Version: 1.0
 ;; Created: 2025-01-02
 ;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
-;; Keywords: convenience
+;; Keywords: convenience, processes, terminals
 
 ;;; Commentary:
 
