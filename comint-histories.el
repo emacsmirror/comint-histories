@@ -184,7 +184,7 @@ If INSERT is non-nil then insert the history into HISTORY's history ring."
 (defun comint-histories--insert-into-history (history input)
   "Insert INPUT into HISTORY's history-ring.
 
-If HISTORY has its :ltrim or :rtrim props set the trim the leading/trailing
+If HISTORY has its :ltrim or :rtrim props set then trim the leading/trailing
 whitespace from INPUT before processing.  If any of HISTORY's :filter's
 return non-nil when applied to INPUT, then do not insert INPUT into the
 history."
