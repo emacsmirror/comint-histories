@@ -52,7 +52,7 @@ Usage: (comint-histories-add-history history-name
 :predicates    List of functions that take zero args who's conjunction
                determines the selection of this history.
 
-:filters       List of regexp strings and functions that take one arg.  If the
+:filters       List of regexp strings and functions that take one arg. If the
                input matches any of the regexp's, or any of the functions return
                non-nil when applied to the input, then the input is not added
                to the history.
@@ -60,13 +60,13 @@ Usage: (comint-histories-add-history history-name
 :persist       If non-nil, then save and load the history to/from a file.
                Defaults to T.
 
-:length        Maximum length of the history ring.  Defaults to 100.
+:length        Maximum length of the history ring. Defaults to 100.
 
 :rtrim         If non-nil, then trim beginning whitespace from the input before
-               adding attempting to add it to the history.  Defaults to T.
+               adding attempting to add it to the history. Defaults to T.
 
 :ltrim         If non-nil, then trim ending whitespace from the input before
-               attempting to add it to the history.  Defaults to T.
+               attempting to add it to the history. Defaults to T.
 
 If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
