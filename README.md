@@ -43,7 +43,6 @@ Usage: (comint-histories-add-history history-name
                determines the selection of this history.
 
 :filters       List of regexp strings and functions that take one arg. If the
-
                input matches any of the regexp's, or any of the functions return
                non-nil when applied to the input, then the input is not added
                to the history.
@@ -62,10 +61,16 @@ Usage: (comint-histories-add-history history-name
 If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
 `comint-histories--histories' (giving it lowest selection precedence), and it's
-history file will be loaded if :persist is non-nil. Otherwise, if a history with
-name NAME does already exist in `comint-histories--histories', then it's
+history file will be loaded if :persist is non-nil.  Otherwise, if a history
+with name NAME does already exist in `comint-histories--histories', then it's
 settings will be updated to the new definition, but it's existing history ring
-will not be updated other than resizing it to the new :length."
+will not be updated other than resizing it to the new :length.
+
+If a history with name NAME already exists in `comint-histories--histories',
+then update the props of the existing history to reflect PROPS. Note that in
+this case the order of `comint-histories--histories' is preserved, and the
+actual saved history for this history is not modified outside changing its
+length if :length was changed in PROPS."
 ```
 
 #### comint-histories-search-history
@@ -94,7 +99,7 @@ This is a helper function that returns the current prompt in the comint buffer. 
 
 #### comint-histories-global-filters
 
-A list of global filters to be used as a filter for every history. Here is an example usage that prevents an input of length less or equal to 3 from entering any history:
+A list of global filters to be used as a filter for every history. Here is an example usage that prevents inputs of length less or equal to 3 from entering any history:
 
 ```
 (add-to-list 'comint-histories-global-filters #'(lambda (input) (<= (length input) 3)))
