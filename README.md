@@ -1,5 +1,9 @@
 # comint-histories
 
+## Installation
+
+Available on MELPA.
+
 ## Overview
 
 comint-histories allows you to to create separate histories for different comint inputs. This is useful if you use comint-mode to run different programs and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the history.
