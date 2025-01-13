@@ -74,7 +74,13 @@ If a history with name NAME does not already exist in
 history file will be loaded if :persist is non-nil.  Otherwise, if a history
 with name NAME does already exist in `comint-histories--histories', then it's
 settings will be updated to the new definition, but it's existing history ring
-will not be updated other than resizing it to the new :length."
+will not be updated other than resizing it to the new :length.
+
+If a history with name NAME already exists in `comint-histories--histories',
+then update the props of the existing history to reflect PROPS. Note that in
+this case the order of `comint-histories--histories' is preserved, and the
+actual saved history for this history is not modified outside changing its
+length if :length was changed in PROPS."
   (declare (indent defun))
   (let ((name (symbol-name name))
         (history (list :history nil
