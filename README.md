@@ -97,7 +97,7 @@ Many packages will sort the candidates for `completing-read`, however, you almos
 
 #### comint-histories-get-prompt
 
-This is a helper function that returns the current prompt in the comint buffer. This function exists because it is very likely that users will want to define history `:predicates` based on the comint prompt.
+This is a helper function that returns the prompt of the comint buffer. This function exists because it is very likely that users will want to define history `:predicates` based on the comint prompt.
 
 ## Variables
 
