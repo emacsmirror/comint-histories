@@ -106,7 +106,7 @@ A helper function that returns the contents of the comint input buffer. This fun
 ```
 (comint-histories-add-history shell-cds
   :predicates '((lambda () (derived-mode-p 'shell-mode))
-                (lambda () (string-match-p "^cd [~/]" (comint-histories-get-input)))))
+                (lambda () (string-match-p "^cd [/~]" (comint-histories-get-input)))))
 ```
 
 #### comint-histories-index-move
