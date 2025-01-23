@@ -97,7 +97,21 @@ Many packages will sort the candidates for `completing-read`, however, you almos
 
 #### comint-histories-get-prompt
 
-This is a helper function that returns the prompt of the comint buffer. This function exists because it is very likely that users will want to define history `:predicates` based on the comint prompt.
+A helper function that returns the prompt of the comint buffer. This function exists because it is very likely that users will want to define history `:predicates` based on the comint prompt.
+
+#### comint-histories-get-input
+
+A helper function that returns the contents of the comint input buffer. This function exists because it is likely that users will want to define history `:predicates` based on the contents of the comint input buffer. Here is an example of a history that saves your `cd` commands that use full paths.
+
+```
+(comint-histories-add-history shell-cds
+  :predicates '((lambda () (derived-mode-p 'shell-mode))
+                (lambda () (string-match-p "^cd " (comint-histories-get-input)))))
+```
+
+#### comint-histories-index-move
+
+Move a history in the history list by index (starting at 0). This function is useful for when you add a new history mid Emacs session, and you wish to place it in a certain position in the history list. Remember that the order of the history list is relevant for history selection, and `comint-histories-add-history` always adds to the end of the history list. This function takes two arguments, HIST-IDX and MOVE-IDX, and moves the history at index HIST-IDX to index MOVE-IDX within the history list. If HIST-IDX is nil, then it is set to the maximum index in the history list.
 
 ## Variables
 
