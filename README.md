@@ -6,7 +6,7 @@ Available on MELPA.
 
 ## Overview
 
-comint-histories allows you to to create separate histories for different comint inputs. This is useful if you use comint-mode to run different programs and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the history.
+comint-histories allows you to to create separate histories for different comint inputs. This is useful if you use comint-mode to run different programs and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the histories.
 
 Say, for example, you use `M-x shell` as your shell, but you also use `M-x shell` to run python repls and use gdb. You could have three histories, one for shell inputs, one for python inputs, and another for gdb inputs. Each of these histories could have different lengths and policies for what input is allowed in the history. You may also sometimes run your python repl from its inferior-mode (`M-x run-python`), and you want those inputs added to the same python history as when you run python through `M-x shell`. This is all possible with comint-histories.
 
@@ -97,7 +97,21 @@ Many packages will sort the candidates for `completing-read`, however, you almos
 
 #### comint-histories-get-prompt
 
-This is a helper function that returns the prompt of the comint buffer. This function exists because it is very likely that users will want to define history `:predicates` based on the comint prompt.
+A helper function that returns the prompt of the comint buffer. This function exists because it is very likely that users will want to define history `:predicates` based on the comint prompt.
+
+#### comint-histories-get-input
+
+A helper function that returns the contents of the comint input buffer. This function exists because it is likely that users will want to define history `:predicates` based on the contents of the comint input buffer. Here is an example of a history that saves your `cd` shell commands that use full paths.
+
+```
+(comint-histories-add-history shell-cds
+  :predicates '((lambda () (derived-mode-p 'shell-mode))
+                (lambda () (string-match-p "^cd [/~]" (comint-histories-get-input)))))
+```
+
+#### comint-histories-index-move
+
+Move a history in the history list by index (starting at 0). This function is useful for when you add a new history mid Emacs session, and you wish to place it in a certain position in the history list. Remember that the order of the history list is relevant for history selection, and `comint-histories-add-history` always adds to the end of the history list. This function takes two arguments, HIST-IDX and MOVE-IDX, and moves the history at index HIST-IDX to index MOVE-IDX within the history list. If HIST-IDX is nil, then it is set to the maximum index in the history list.
 
 ## Variables
 

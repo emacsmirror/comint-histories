@@ -9,7 +9,7 @@
 ;; Author: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; URL: https://github.com/NicholasBHubbard/comint-histories
 ;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
-;; Version: 1.0
+;; Version: 1.1
 ;; Created: 2025-01-02
 ;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; Keywords: convenience, processes, terminals
@@ -230,20 +230,55 @@ with zero arguments."
           (throw 'loop t))))
     selected-history))
 
+(defun comint-histories-get-input ()
+  "Return the content of the comint input buffer."
+  (let ((proc (get-buffer-process (current-buffer))))
+    (if (not proc)
+        (user-error "Current buffer has no process")
+      (save-excursion
+        (goto-char (point-max))
+        (let ((beg-point (comint-line-beginning-position))
+              (end-point (point)))
+          (buffer-substring-no-properties beg-point end-point))))))
+
+(defun comint-histories-index-move (hist-idx move-idx)
+  "Move the history at index HIST-IDX to index MOVE-IDX in the history list.
+
+If HIST-IDX is NIL then it is assumed to be the maximum index of
+`comint-histories--histories'.
+
+Note that indices start at 0."
+  (let* ((histories-length (length comint-histories--histories))
+         (max-index (- histories-length 1))
+         (hist-idx (or hist-idx max-index)))
+    (if (= 0 histories-length)
+        (user-error "History list is empty")
+      (if (= 1 histories-length)
+          (user-error "History list only has 1 history")
+        (if (or (> 0 hist-idx) (> hist-idx max-index))
+            (user-error "HIST-IDX not in range")
+          (if (or (> 0 move-idx) (> move-idx max-index))
+              (user-error "MOVE-IDX not in range")
+            (let* ((history (nth hist-idx comint-histories--histories))
+                   (history-list
+                    (cl-remove
+                     (car history)
+                     comint-histories--histories
+                     :test #'equal
+                     :key #'car))
+                   (padded (cons nil history-list))
+                   (c (nthcdr move-idx padded)))
+              (setcdr c (cons history (cdr c)))
+              (setq comint-histories--histories (cdr padded)))))))))
+
 (defun comint-histories--process-comint-input (&rest _)
   "Process the current comint input buffer, potentially adding it to a history.
 
 This function is used as advice aroung `comint-send-input' when
 `comint-histories-mode' is enabled."
-  (let ((proc (get-buffer-process (current-buffer))))
-    (if (not proc)
-        (user-error "Current buffer has no process")
-      (when-let ((history (comint-histories--select-history)))
-        (goto-char (point-max))
-        (let* ((beg-point (comint-line-beginning-position))
-               (end-point (point-max))
-               (input (buffer-substring-no-properties beg-point end-point)))
-          (comint-histories--insert-into-history history input))))))
+  (when-let ((history (comint-histories--select-history)))
+    (let ((input (comint-histories-get-input)))
+      (comint-histories--insert-into-history history input))))
 
 (defun comint-histories--save-histories ()
   "Save persistent histories in `comint-histories--histories' to disk."
