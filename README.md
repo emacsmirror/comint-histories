@@ -6,7 +6,7 @@ Available on MELPA.
 
 ## Overview
 
-comint-histories allows you to to create separate histories for different comint inputs. This is useful if you use comint-mode to run different programs and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the history.
+comint-histories allows you to to create separate histories for different comint inputs. This is useful if you use comint-mode to run different programs and you want each program to have its own history. comint-histories also allows you to save your histories across sessions and create custom filters to keep junk out of the histories.
 
 Say, for example, you use `M-x shell` as your shell, but you also use `M-x shell` to run python repls and use gdb. You could have three histories, one for shell inputs, one for python inputs, and another for gdb inputs. Each of these histories could have different lengths and policies for what input is allowed in the history. You may also sometimes run your python repl from its inferior-mode (`M-x run-python`), and you want those inputs added to the same python history as when you run python through `M-x shell`. This is all possible with comint-histories.
 
