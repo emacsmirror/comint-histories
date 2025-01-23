@@ -101,7 +101,7 @@ A helper function that returns the prompt of the comint buffer. This function ex
 
 #### comint-histories-get-input
 
-A helper function that returns the contents of the comint input buffer. This function exists because it is likely that users will want to define history `:predicates` based on the contents of the comint input buffer. Here is an example of a history that saves your `cd` commands that use full paths.
+A helper function that returns the contents of the comint input buffer. This function exists because it is likely that users will want to define history `:predicates` based on the contents of the comint input buffer. Here is an example of a history that saves your `cd` shell commands that use full paths.
 
 ```
 (comint-histories-add-history shell-cds
