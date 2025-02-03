@@ -9,7 +9,7 @@
 ;; Author: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; URL: https://github.com/NicholasBHubbard/comint-histories
 ;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
-;; Version: 1.1
+;; Version: 1.2
 ;; Created: 2025-01-02
 ;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; Keywords: convenience, processes, terminals
@@ -269,7 +269,8 @@ Note that indices start at 0."
                    (padded (cons nil history-list))
                    (c (nthcdr move-idx padded)))
               (setcdr c (cons history (cdr c)))
-              (setq comint-histories--histories (cdr padded)))))))))
+              (setq comint-histories--histories (cdr padded))
+              (mapcar #'car comint-histories--histories))))))))
 
 (defun comint-histories--process-comint-input (&rest _)
   "Process the current comint input buffer, potentially adding it to a history.
