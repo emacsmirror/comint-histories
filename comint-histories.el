@@ -9,7 +9,7 @@
 ;; Author: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; URL: https://github.com/NicholasBHubbard/comint-histories
 ;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
-;; Version: 1.2
+;; Version: 1.3
 ;; Created: 2025-01-02
 ;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; Keywords: convenience, processes, terminals
@@ -141,8 +141,7 @@ automatically select the history."
                           nil t)))
         (goto-char (point-max))
         (delete-region (comint-line-beginning-position) (point))
-        (insert history-val)
-        (goto-char (comint-line-beginning-position))))))
+        (insert history-val)))))
 
 (defun comint-histories-get-prompt ()
   "Return the latest comint prompt in the current buffer as a string."
