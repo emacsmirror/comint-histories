@@ -43,6 +43,9 @@
 (defvar comint-histories--histories nil
   "Internal alist of plists containing all defined histories.")
 
+(defcustom comint-histories-set-comint-input nil
+  "If non-nil set `comint-input-ring' in a new comint buffer from an appropriate comint history.")
+
 (defmacro comint-histories-add-history (name &rest props)
   "Declare a comint-histories history named NAME with properties PROPS.
 
@@ -285,6 +288,14 @@ This function is used as advice aroung `comint-send-input' when
   (dolist (history comint-histories--histories)
     (when (plist-get (cdr history) :persist)
       (comint-histories--save-history history))))
+
+(defun comint-histories--comint-mode-hook ()
+  "Run comint-histories `comint-mode' configuration."
+  (when comint-histories-set-comint-input
+    (setq comint-input-ring
+          (plist-get (cdr (comint-histories--select-history)) :history))))
+
+(add-hook 'comint-mode-hook comint-histories--comint-mode-hook)
 
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
