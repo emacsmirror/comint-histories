@@ -43,8 +43,14 @@
 (defvar comint-histories--histories nil
   "Internal alist of plists containing all defined histories.")
 
+(defgroup comint-histories nil
+  "Persist multiple comint histories across different processes."
+  :group 'convenience)
+
 (defcustom comint-histories-set-comint-input nil
-  "If non-nil set `comint-input-ring' in a new comint buffer from an appropriate comint history.")
+  "If non-nil set `comint-input-ring' in a new comint buffer from an appropriate comint history."
+  :group 'comint-histories
+  :type 'boolean)
 
 (defmacro comint-histories-add-history (name &rest props)
   "Declare a comint-histories history named NAME with properties PROPS.
