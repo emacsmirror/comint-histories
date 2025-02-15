@@ -301,8 +301,6 @@ This function is used as advice aroung `comint-send-input' when
     (setq comint-input-ring
           (plist-get (cdr (comint-histories--select-history)) :history))))
 
-(add-hook 'comint-mode-hook comint-histories--comint-mode-hook)
-
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
   :global t
@@ -312,7 +310,8 @@ This function is used as advice aroung `comint-send-input' when
       (progn
         (advice-add 'comint-send-input :before
                     #'comint-histories--process-comint-input)
-        (add-hook 'kill-emacs-hook #'comint-histories--save-histories))
+        (add-hook 'kill-emacs-hook #'comint-histories--save-histories)
+        (add-hook 'comint-mode-hook #'comint-histories--comint-mode-hook))
     (advice-remove 'comint-send-input #'comint-histories--process-comint-input)
     (remove-hook 'kill-emacs-hook #'comint-histories--save-histories)))
 
