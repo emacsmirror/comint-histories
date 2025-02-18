@@ -127,10 +127,6 @@ A list of global filters to be used as a filter for every history. Here is an ex
 
 Directory to place history files for persistent histories.
 
-#### comint-histories-set-comint-input
-
-Sets `comint-input-ring` based on relevant saved histories.
-
 ## Example configuration
 
 Here is a slightly modified version of my current configuration for comint-histories:
