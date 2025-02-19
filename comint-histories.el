@@ -1,4 +1,4 @@
-;;; comint-histories.el --- Many comint histories  -*- lexical-binding: t; -*-
+;;; comint-histories.el --- Many comint histories -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025 Nicholas Hubbard <nicholashubbard@posteo.net>
 ;;
@@ -9,7 +9,7 @@
 ;; Author: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; URL: https://github.com/NicholasBHubbard/comint-histories
 ;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
-;; Version: 1.3
+;; Version: 1.4
 ;; Created: 2025-01-02
 ;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; Keywords: convenience, processes, terminals
@@ -51,27 +51,29 @@ Usage: (comint-histories-add-history history-name
 
 :predicates             List of functions that take zero args who's conjunction
                         determines the selection of this history.
-                        
-:filters                List of regexp strings and functions that take one arg.  If the
-                        input matches any of the regexp's, or any of the functions return
-                        non-nil when applied to the input, then the input is not added
-                        to the history.
-                        
-:persist                If non-nil, then save and load the history to/from a file.
-                        Defaults to T.
-                        
+
+:filters                List of regexp strings and functions that take one arg.
+                        If the input matches any of the regexp's, or any of the
+                        functions return non-nil when applied to the input, then
+                        the input is not added to the history.
+
+:persist                If non-nil, then save and load the history to/from a
+                        file. Defaults to T.
+
 :length                 Maximum length of the history ring. Defaults to 100.
-                        
-:rtrim                  If non-nil, then trim beginning whitespace from the input before
-                        adding attempting to add it to the history. Defaults to T.
-                        
-:ltrim                  If non-nil, then trim ending whitespace from the input before
-                        attempting to add it to the history. Defaults to T. 
-                        
-:set-comint-input-ring  If non-nil set `comint-input-ring' in matching comint buffers to this
-                        history's ring, and set `comint-input-filter' using :predicates if
-                        specified.
-                        
+
+:rtrim                  If non-nil, then trim beginning whitespace from the
+                        input before adding attempting to add it to the history.
+                        Defaults to T.
+
+:ltrim                  If non-nil, then trim ending whitespace from the input
+                        before attempting to add it to the history. Defaults to
+                        T.
+
+:set-comint-input-ring  If non-nil, set `comint-input-ring' in matching comint
+                        buffers to this history's ring, and set
+                        `comint-input-filter' using :filters if specified.
+                        Defaults to NIL.
 
 If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
@@ -127,7 +129,7 @@ length if :length was changed in PROPS."
 (defun comint-histories-search-history (arg &optional history)
   "Search the HISTORY with `completing-read' and insert the selection.
 
-If HISTORY is NIL then if ARG (or prefix arg) prompt for a history else
+If HISTORY is NIL, then if ARG (or prefix arg) prompt for a history, else
 automatically select the history."
   (interactive "P")
   (let ((history (or history
@@ -225,7 +227,10 @@ history."
   "Select a history from `comint-histories--histories'.
 
 A history is selected if all of it's :predicates return non-nil when invoked
-with zero arguments."
+with zero arguments.
+
+If the selected history has non-nil :set-comint-input-ring, then invokes
+`comint-histories--setup-comint-input-ring' applied to the selected history."
   (let ((selected-history))
     (catch 'loop
       (dolist (history comint-histories--histories)
@@ -280,7 +285,7 @@ Note that indices start at 0."
 (defun comint-histories--process-comint-input (&rest _)
   "Process the current comint input buffer, potentially adding it to a history.
 
-This function is used as advice aroung `comint-send-input' when
+This function is used as advice around `comint-send-input' when
 `comint-histories-mode' is enabled."
   (when-let ((history (comint-histories--select-history)))
     (let ((input (comint-histories-get-input)))
