@@ -238,6 +238,8 @@ If the selected history has non-nil :set-comint-input-ring, then invokes
                         (plist-get (cdr history) :predicates))
           (setq selected-history history)
           (throw 'loop t))))
+    (when (plist-get (cdr selected-history) :set-comint-input-ring)
+      (comint-histories--setup-comint-input-ring selected-history))
     selected-history))
 
 (defun comint-histories-get-input ()
@@ -297,21 +299,22 @@ This function is used as advice around `comint-send-input' when
     (when (plist-get (cdr history) :persist)
       (comint-histories--save-history history))))
 
-(defun comint-histories--comint-mode-hook ()
-  "Run comint-histories `comint-mode' configuration."
-  (when-let ((history-props (cdr (comint-histories--select-history))))
-    (when (plist-get history-props :set-comint-input-ring)
-      (let ((ring (plist-get history-props :history))
-            (filters (plist-get history-props :filters)))
-        (setq comint-input-ring ring)
-        (when filters
-          (setq-local comint-input-filter
-                      (lambda (input)
-                        (cl-every (lambda (filter)
-                                    (if (functionp filter)
-                                        (funcall filter input)
-                                      (string-match-p filter input)))
-                                  filters))))))))
+(defun comint-histories--setup-comint-input-ring (history)
+  "Setup the `comint-input-ring' if HISTORY has non-nil :set-comint-input-ring.
+
+Also sets `comint-input-filter' based on the :filters of HISTORY."
+  (when (plist-get (cdr history) :set-comint-input-ring)
+    (let ((ring (plist-get (cdr history) :history))
+          (filters (append comint-histories-global-filters
+                           (plist-get (cdr history) :filters))))
+      (setq-local comint-input-ring ring)
+      (setq-local comint-input-filter
+                  (lambda (input)
+                    (cl-every (lambda (filter)
+                                (if (functionp filter)
+                                    (not (funcall filter input))
+                                  (not (string-match-p filter input))))
+                              filters))))))
 
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
@@ -323,10 +326,10 @@ This function is used as advice around `comint-send-input' when
         (advice-add 'comint-send-input :before
                     #'comint-histories--process-comint-input)
         (add-hook 'kill-emacs-hook #'comint-histories--save-histories)
-        (add-hook 'comint-mode-hook #'comint-histories--comint-mode-hook))
+        (add-hook 'comint-mode-hook #'comint-histories--select-history))
     (advice-remove 'comint-send-input #'comint-histories--process-comint-input)
     (remove-hook 'kill-emacs-hook #'comint-histories--save-histories)
-    (remove-hook 'comint-mode-hook #'comint-histories--comint-mode-hook)))
+    (remove-hook 'comint-mode-hook #'comint-histories--select-history)))
 
 (provide 'comint-histories)
 
