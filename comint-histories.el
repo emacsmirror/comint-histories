@@ -220,7 +220,11 @@ If INSERT is non-nil then insert the history into HISTORY's history ring."
   "Select a history from `comint-histories--histories'.
 
 A history is selected if all of it's :predicates return non-nil when invoked
-with zero arguments."
+with zero arguments. If a history is selected that is different than
+`comint-histories--last-selected-history', then save back `comint-input-ring' to
+`comint-histories--last-selected-history's :history entry in the history list,
+and set the newly selected histories :history as `comint-input-ring', and update
+`comint-histories--last-selected-history'."
   (let ((selected-history))
     (catch 'loop
       (dolist (history comint-histories--histories)
@@ -309,8 +313,9 @@ when `comint-histories-mode' is enabled."
 
 (defun comint-histories--comint-mode-hook ()
   "Hook to `comint-mode-hook' used when `comint-histories-mode' is on."
-  (setq-local comint-input-ring (make-ring comint-input-ring-size))
-  (setq-local comint-input-filter comint-input-filter))
+  (unless (comint-histories--select-history)
+    (setq-local comint-input-ring (make-ring comint-input-ring-size))
+    (setq-local comint-input-filter comint-input-filter)))
 
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
