@@ -274,9 +274,6 @@ Note that indices start at 0."
 
 (defun comint-histories--save-histories-to-disk ()
   "Save persistent histories in `comint-histories--histories' to disk."
-  (dolist (buf (buffer-list))
-    (with-current-buffer buf
-      (when (derived-mode-p 'comint-mode))))
   (dolist (history comint-histories--histories)
     (when (plist-get (cdr history) :persist)
       (comint-histories--save-history-to-disk history))))
