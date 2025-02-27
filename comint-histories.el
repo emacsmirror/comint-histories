@@ -190,12 +190,11 @@ If INSERT is non-nil then insert the history into HISTORY's history ring."
                  (split-string history-text (format "%c" #x1F) t)
                  length)))
     (when insert
-      (let ((comint-input-ring (make-ring length))
+      (let ((comint-input-ring (plist-get (cdr history) :history))
             (comint-input-filter
              (comint-histories--history-filter-function history)))
         (dolist (x (reverse lines))
-          (comint-add-to-input-history x))
-        (comint-histories--save-back-comint-input-ring history)))
+          (comint-add-to-input-history x))))
     lines))
 
 (defun comint-histories--save-history-to-disk (history)
@@ -209,22 +208,12 @@ If INSERT is non-nil then insert the history into HISTORY's history ring."
       (setq text (concat text (format "%s%c" x #x1F))))
     (f-write-text text 'utf-8 history-file)))
 
-(defun comint-histories--save-back-comint-input-ring (history)
-  "Save `comint-input-ring' back to HISTORYs :history in the history list."
-  (setf (plist-get
-         (cdr (assoc (car history) comint-histories--histories))
-         :history)
-        comint-input-ring))
-
 (defun comint-histories--select-history ()
   "Select a history from `comint-histories--histories'.
 
 A history is selected if all of it's :predicates return non-nil when invoked
-with zero arguments. If a history is selected that is different than
-`comint-histories--last-selected-history', then save back `comint-input-ring' to
-`comint-histories--last-selected-history's :history entry in the history list,
-and set the newly selected histories :history as `comint-input-ring', and update
-`comint-histories--last-selected-history'."
+with zero arguments. If a new history is selected then set `comint-input-ring'
+to that histories history ring."
   (let ((selected-history))
     (catch 'loop
       (dolist (history comint-histories--histories)
@@ -235,9 +224,6 @@ and set the newly selected histories :history as `comint-input-ring', and update
     (when (and selected-history
                (not (equal (car selected-history)
                            (car comint-histories--last-selected-history))))
-      (when comint-histories--last-selected-history
-        (comint-histories--save-back-comint-input-ring
-         comint-histories--last-selected-history))
       (setq-local comint-histories--last-selected-history selected-history)
       (setq-local comint-input-ring (plist-get (cdr selected-history) :history))
       (setq-local comint-input-filter
