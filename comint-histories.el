@@ -208,7 +208,7 @@ If INSERT is non-nil then insert the history into HISTORY's history ring."
       (setq text (concat text (format "%s%c" x #x1F))))
     (f-write-text text 'utf-8 history-file)))
 
-(defun comint-histories--select-history ()
+(defun comint-histories--select-history (&rest _args)
   "Select a history from `comint-histories--histories'.
 
 A history is selected if all of it's :predicates return non-nil when invoked
@@ -285,13 +285,13 @@ This function is used as :filter-args advice to `comint-add-to-input-history'
 when `comint-histories-mode' is enabled."
   (if-let ((history comint-histories--last-selected-history))
       (let ((ltrim (plist-get (cdr history) :ltrim))
-            (rtrim (plist-get (cdr history) :rtrim))
-            (cmd (car args)))
-        (when ltrim
-          (setq cmd (replace-regexp-in-string "^[\n\r ]+" "" cmd)))
-        (when rtrim
-          (setq cmd (replace-regexp-in-string "[\n\r ]+$" "" cmd)))
-        (list cmd))
+            (rtrim (plist-get (cdr history) :rtrim)))
+        (when-let ((cmd (car args)))
+          (when ltrim
+            (setq cmd (replace-regexp-in-string "^[\n\r ]+" "" cmd)))
+          (when rtrim
+            (setq cmd (replace-regexp-in-string "[\n\r ]+$" "" cmd)))
+          (list cmd)))
     args))
 
 (defun comint-histories--comint-mode-hook ()
