@@ -283,22 +283,16 @@ Note that indices start at 0."
 
 This function is used as :filter-args advice to `comint-add-to-input-history'
 when `comint-histories-mode' is enabled."
-  (if-let ((history comint-histories--last-selected-history))
+  (if-let ((history comint-histories--last-selected-history)
+           (cmd (car args)))
       (let ((ltrim (plist-get (cdr history) :ltrim))
             (rtrim (plist-get (cdr history) :rtrim)))
-        (when-let ((cmd (car args)))
-          (when ltrim
-            (setq cmd (replace-regexp-in-string "^[\n\r ]+" "" cmd)))
-          (when rtrim
-            (setq cmd (replace-regexp-in-string "[\n\r ]+$" "" cmd)))
-          (list cmd)))
+        (when ltrim
+          (setq cmd (replace-regexp-in-string "^[\n\r ]+" "" cmd)))
+        (when rtrim
+          (setq cmd (replace-regexp-in-string "[\n\r ]+$" "" cmd)))
+        (list cmd))
     args))
-
-(defun comint-histories--comint-mode-hook ()
-  "Hook to `comint-mode-hook' used when `comint-histories-mode' is on."
-  (unless (comint-histories--select-history)
-    (setq-local comint-input-ring (make-ring comint-input-ring-size))
-    (setq-local comint-input-filter comint-input-filter)))
 
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
@@ -307,13 +301,13 @@ when `comint-histories-mode' is enabled."
   :require 'comint-histories
   (if comint-histories-mode
       (progn
-        (add-hook 'comint-mode-hook #'comint-histories--comint-mode-hook)
+        (add-hook 'comint-mode-hook #'comint-histories--select-history)
         (advice-add 'comint-send-input :before
                     #'comint-histories--select-history)
         (advice-add 'comint-add-to-input-history :filter-args
                     #'comint-histories--maybe-trim-input)
         (add-hook 'kill-emacs-hook #'comint-histories--save-histories-to-disk))
-    (remove-hook 'comint-mode-hook #'comint-histories--comint-mode-hook)
+    (remove-hook 'comint-mode-hook #'comint-histories--select-history)
     (advice-remove 'comint-send-input #'comint-histories--select-history)
     (advice-remove 'comint-add-to-input-history
                    #'comint-histories--maybe-trim-input)
