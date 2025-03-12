@@ -202,7 +202,8 @@ If INSERT is non-nil then insert the history into HISTORY's history ring."
     (when insert
       (let ((comint-input-ring (plist-get (cdr history) :history))
             (comint-input-filter
-             (comint-histories--history-filter-function history)))
+             (comint-histories--history-filter-function history))
+            (comint-input-ring-size (plist-get (cdr history) :length)))
         (dolist (x (reverse lines))
           (comint-add-to-input-history x))))
     lines))
@@ -212,9 +213,11 @@ If INSERT is non-nil then insert the history into HISTORY's history ring."
   (let* ((history-file (comint-histories--history-file history))
          (existing-history (ring-elements (plist-get (cdr history) :history)))
          (loaded-history (comint-histories--load-history-from-disk history))
+         (all-history (append existing-history loaded-history))
          (text ""))
-    (dolist (x (seq-take (delete-dups (append existing-history loaded-history))
-                         (plist-get (cdr history) :length)))
+    (when (plist-get (cdr history) :no-dups)
+      (setq all-history (delete-dups all-history)))
+    (dolist (x (seq-take all-history (plist-get (cdr history) :length)))
       (setq text (concat text (format "%s%c" x #x1F))))
     (f-write-text text 'utf-8 history-file)))
 
