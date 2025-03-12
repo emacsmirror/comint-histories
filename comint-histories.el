@@ -69,6 +69,10 @@ Usage: (comint-histories-add-history history-name
 
 :length        Maximum length of the history ring. Defaults to 100.
 
+:no-dups       Do not allow duplicate entries from entering the history. When
+               adding a duplicate item to the history, the older entry is
+               removed first. Defaults to NIL.
+
 :rtrim         If non-nil, then trim beginning whitespace from the input before
                adding attempting to add it to the history. Defaults to T.
 
@@ -95,9 +99,11 @@ length if :length was changed in PROPS."
                        :filters nil
                        :persist t
                        :length 100
+                       :no-dups nil
                        :rtrim t
                        :ltrim t))
-        (valid-props '(:predicates :filters :persist :length :rtrim :ltrim)))
+        (valid-props
+         '(:predicates :filters :persist :length :no-dups :rtrim :ltrim)))
     (while props
       (let ((prop (car props))
             (val (cadr props)))
@@ -282,19 +288,24 @@ Note that indices start at 0."
     (when (plist-get (cdr history) :persist)
       (comint-histories--save-history-to-disk history))))
 
-(defun comint-histories--maybe-trim-input (args)
-  "Advise function to maybe trim cmd before adding it to `comint-input-ring'.
+(defun comint-histories--before-add-to-comint-input-ring (args)
+  "Advise function to run before `comint-add-to-input-history'.
 
-This function is used as :filter-args advice to `comint-add-to-input-history'
-when `comint-histories-mode' is enabled."
+Uses the most recently selected history as the history. Trims the input if the
+:ltrim or :rtrim history options are set. If the :no-dups option is set then
+removes duplicate items from `comint-input-ring'."
   (if-let ((history comint-histories--last-selected-history)
            (cmd (car args)))
       (let ((ltrim (plist-get (cdr history) :ltrim))
-            (rtrim (plist-get (cdr history) :rtrim)))
+            (rtrim (plist-get (cdr history) :rtrim))
+            (no-dups (plist-get (cdr history) :no-dups)))
         (when ltrim
           (setq cmd (replace-regexp-in-string "^[\n\r ]+" "" cmd)))
         (when rtrim
           (setq cmd (replace-regexp-in-string "[\n\r ]+$" "" cmd)))
+        (when no-dups
+          (while-let ((idx (ring-member comint-input-ring cmd)))
+            (ring-remove comint-input-ring idx)))
         (list cmd))
     args))
 
@@ -309,12 +320,12 @@ when `comint-histories-mode' is enabled."
         (advice-add 'comint-send-input :before
                     #'comint-histories--select-history)
         (advice-add 'comint-add-to-input-history :filter-args
-                    #'comint-histories--maybe-trim-input)
+                    #'comint-histories--before-add-to-comint-input-ring)
         (add-hook 'kill-emacs-hook #'comint-histories--save-histories-to-disk))
     (remove-hook 'comint-mode-hook #'comint-histories--select-history)
     (advice-remove 'comint-send-input #'comint-histories--select-history)
     (advice-remove 'comint-add-to-input-history
-                   #'comint-histories--maybe-trim-input)
+                   #'comint-histories--before-add-to-comint-input-ring)
     (remove-hook 'kill-emacs-hook #'comint-histories--save-histories-to-disk)))
 
 (provide 'comint-histories)
