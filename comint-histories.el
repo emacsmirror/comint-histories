@@ -33,12 +33,16 @@
 (require 'seq)
 (require 'f)
 
-(defvar comint-histories-persist-dir
+(defcustom comint-histories-persist-dir
   (f-join user-emacs-directory "comint-histories")
-  "Directory for storing saved histories.")
+  "Directory for storing saved histories."
+  :type 'string
+  :group 'comint-histories)
 
-(defvar comint-histories-global-filters nil
-  "Filters to be implicitly added to all history :filters.")
+(defcustom comint-histories-global-filters nil
+  "Filters to be implicitly added to all history :filters."
+  :type '(repeat sexp)
+  :group 'comint-histories)
 
 (defvar-local comint-histories--last-selected-history nil
   "Internal variable to keep track of the buffers selected history.")
