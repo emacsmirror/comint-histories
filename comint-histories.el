@@ -236,6 +236,8 @@ to that histories history ring."
                            (car comint-histories--last-selected-history))))
       (setq-local comint-histories--last-selected-history selected-history)
       (setq-local comint-input-ring (plist-get (cdr selected-history) :history))
+      (setq-local comint-input-ring-size
+                  (plist-get (cdr selected-history :length)))
       (setq-local comint-input-filter
                   (comint-histories--history-filter-function selected-history)))
     selected-history))
