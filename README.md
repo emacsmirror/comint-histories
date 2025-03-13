@@ -141,10 +141,10 @@ Here is a slightly modified version of the authors current configuration for com
 
 ```
 (use-package comint-histories
+  :custom
+  (comint-histories-global-filters '((lambda (x) (<= (length x) 3)) string-blank-p))
   :config
   (comint-histories-mode 1)
-
-  (setq comint-histories-global-filters '((lambda (x) (<= (length x) 3))))
 
   (comint-histories-add-history gdb
     :predicates '((lambda () (string-match-p "^(gdb)" (comint-histories-get-prompt))))
