@@ -141,8 +141,20 @@ Here is a slightly modified version of the authors current configuration for com
 
 ```
 (use-package comint-histories
+  :demand t
   :custom
   (comint-histories-global-filters '((lambda (x) (<= (length x) 3)) string-blank-p))
+  :bind
+  (:map comint-mode-map
+        ("C-r" . (lambda () (interactive)
+                   (let ((ivy-sort-functions-alist nil)
+                         (ivy-prescient-enable-sorting nil)
+                         (vertico-sort-function nil)
+                         (vertico-sort-override-function nil)
+                         (vertico-prescient-enable-sorting nil)
+                         (selectrum-should-sort nil)
+                         (selectrum-prescient-enable-sorting nil))
+                     (call-interactively #'comint-histories-search-history)))))
   :config
   (comint-histories-mode 1)
 
@@ -165,15 +177,5 @@ Here is a slightly modified version of the authors current configuration for com
     :predicates '((lambda () (derived-mode-p 'shell-mode)))
     :filters '("^ls" "^cd")
     :length 2000
-    :no-dups t)
-
-  (define-key comint-mode-map (kbd "C-r") #'(lambda () (interactive)
-                                              (let ((ivy-sort-functions-alist nil)
-                                                    (ivy-prescient-enable-sorting nil)
-                                                    (vertico-sort-function nil)
-                                                    (vertico-sort-override-function nil)
-                                                    (vertico-prescient-enable-sorting nil)
-                                                    (selectrum-should-sort nil)
-                                                    (selectrum-prescient-enable-sorting nil))
-                                                (call-interactively #'comint-histories-search-history)))))
+    :no-dups t))
 ```
