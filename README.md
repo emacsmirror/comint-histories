@@ -137,13 +137,11 @@ Directory to place history files for persistent histories.
 
 ## Example configuration
 
-Here is a slightly modified version of the authors current configuration for comint-histories:
+Here is a modified version of the authors current configuration for comint-histories:
 
 ```
 (use-package comint-histories
   :demand t
-  :custom
-  (comint-histories-global-filters '((lambda (x) (<= (length x) 3)) string-blank-p))
   :bind
   (:map comint-mode-map
         ("C-r" . (lambda () (interactive)
@@ -155,6 +153,8 @@ Here is a slightly modified version of the authors current configuration for com
                          (selectrum-should-sort nil)
                          (selectrum-prescient-enable-sorting nil))
                      (call-interactively #'comint-histories-search-history)))))
+  :custom
+  (comint-histories-global-filters '((lambda (x) (<= (length x) 3)) string-blank-p))
   :config
   (comint-histories-mode 1)
 
