@@ -10,6 +10,8 @@ comint-histories allows you to to create separate histories for different comint
 
 Say, for example, you use `M-x shell` as your shell, but you also use `M-x shell` to run python repls and use gdb. You could have three histories, one for shell inputs, one for python inputs, and another for gdb inputs. Each of these histories could have different lengths and policies for what input is allowed in the history. You may also sometimes run your python repl from its inferior-mode (`M-x run-python`), and you want those inputs added to the same python history as when you run python through `M-x shell`. This is all possible with comint-histories.
 
+For the most part comint-histories leverages the existing components of comint-mode, including the `comint-input-ring`.
+
 To use comint-histories you must turn on the global minor mode `comint-histories-mode`:
 
 ```
@@ -56,6 +58,10 @@ Usage: (comint-histories-add-history history-name
 
 :length        Maximum length of the history ring. Defaults to 100.
 
+:no-dups       Do not allow duplicate entries from entering the history. When
+               adding a duplicate item to the history, the older entry is
+               removed first. Defaults to NIL.
+
 :rtrim         If non-nil, then trim beginning whitespace from the input before
                adding attempting to add it to the history. Defaults to T.
 
@@ -80,6 +86,8 @@ length if :length was changed in PROPS."
 #### comint-histories-search-history
 
 This is the only interactive function provided by comint-histories and allows you to browse a history with `completing-read` to select and insert a history item. If called with prefix arg, then the user is prompted to select a history with `completing-read`, otherwise automatic selection is made.
+
+Though comint-histories leverages the `comint-input-ring`, which means functions like `comint-history-isearch-backward` work seamlessly, a `completing-read` interface is preferred by the author of comint-histories.
 
 Many packages will sort the candidates for `completing-read`, however, you almost certainly do not want your histories sorted as they are already in order of newest entries to oldest. For this reason, a binding similar to the following is recommended for using `comint-histories-search-history`.
 
@@ -129,18 +137,19 @@ Directory to place history files for persistent histories.
 
 ## Example configuration
 
-Here is a slightly modified version of my current configuration for comint-histories:
+Here is a slightly modified version of the authors current configuration for comint-histories:
 
 ```
 (use-package comint-histories
+  :custom
+  (comint-histories-global-filters '((lambda (x) (<= (length x) 3)) string-blank-p))
   :config
   (comint-histories-mode 1)
 
-  (setq comint-histories-global-filters '((lambda (x) (<= (length x) 3))))
-
   (comint-histories-add-history gdb
     :predicates '((lambda () (string-match-p "^(gdb)" (comint-histories-get-prompt))))
-    :length 2000)
+    :length 2000
+    :no-dups t)
 
   (comint-histories-add-history python
     :predicates '((lambda () (or (derived-mode-p 'inferior-python-mode)
@@ -149,12 +158,14 @@ Here is a slightly modified version of my current configuration for comint-histo
 
   (comint-histories-add-history ielm
     :predicates '((lambda () (derived-mode-p 'inferior-emacs-lisp-mode)))
-    :length 2000)
+    :length 2000
+    :no-dups t)
 
   (comint-histories-add-history shell
     :predicates '((lambda () (derived-mode-p 'shell-mode)))
     :filters '("^ls" "^cd")
-    :length 2000)
+    :length 2000
+    :no-dups t)
 
   (define-key comint-mode-map (kbd "C-r") #'(lambda () (interactive)
                                               (let ((ivy-sort-functions-alist nil)

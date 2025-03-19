@@ -1,4 +1,4 @@
-;;; comint-histories.el --- Many comint histories  -*- lexical-binding: t; -*-
+;;; comint-histories.el --- Many comint histories -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2025 Nicholas Hubbard <nicholashubbard@posteo.net>
 ;;
@@ -9,7 +9,7 @@
 ;; Author: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; URL: https://github.com/NicholasBHubbard/comint-histories
 ;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
-;; Version: 1.3
+;; Version: 2.0
 ;; Created: 2025-01-02
 ;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; Keywords: convenience, processes, terminals
@@ -33,12 +33,19 @@
 (require 'seq)
 (require 'f)
 
-(defvar comint-histories-persist-dir
+(defcustom comint-histories-persist-dir
   (f-join user-emacs-directory "comint-histories")
-  "Directory for storing saved histories.")
+  "Directory for storing saved histories."
+  :type 'string
+  :group 'comint-histories)
 
-(defvar comint-histories-global-filters nil
-  "Filters to be implicitly added to all history :filters.")
+(defcustom comint-histories-global-filters nil
+  "Filters to be implicitly added to all history :filters."
+  :type '(repeat sexp)
+  :group 'comint-histories)
+
+(defvar-local comint-histories--last-selected-history nil
+  "Internal variable to keep track of the buffers selected history.")
 
 (defvar comint-histories--histories nil
   "Internal alist of plists containing all defined histories.")
@@ -61,6 +68,10 @@ Usage: (comint-histories-add-history history-name
                Defaults to T.
 
 :length        Maximum length of the history ring. Defaults to 100.
+
+:no-dups       Do not allow duplicate entries from entering the history. When
+               adding a duplicate item to the history, the older entry is
+               removed first. Defaults to NIL.
 
 :rtrim         If non-nil, then trim beginning whitespace from the input before
                adding attempting to add it to the history. Defaults to T.
@@ -88,9 +99,11 @@ length if :length was changed in PROPS."
                        :filters nil
                        :persist t
                        :length 100
+                       :no-dups nil
                        :rtrim t
                        :ltrim t))
-        (valid-props '(:predicates :filters :persist :length :rtrim :ltrim)))
+        (valid-props
+         '(:predicates :filters :persist :length :no-dups :rtrim :ltrim)))
     (while props
       (let ((prop (car props))
             (val (cadr props)))
@@ -114,9 +127,10 @@ length if :length was changed in PROPS."
                      (cdr history)))
            (setf (plist-get (cdr history) :history)
                  (make-ring (plist-get (cdr history) :length)))
-           (when (plist-get (cdr history) :persist)
-             (comint-histories--load-history history t))
-           (add-to-list 'comint-histories--histories history t))))))
+           (add-to-list 'comint-histories--histories history t)
+           (when (and (plist-get (cdr history) :persist)
+                      (f-file? (comint-histories--history-file history t)))
+             (comint-histories--load-history-from-disk history t)))))))
 
 (defun comint-histories-search-history (arg &optional history)
   "Search the HISTORY with `completing-read' and insert the selection.
@@ -153,73 +167,66 @@ automatically select the history."
         (beginning-of-line)
         (buffer-substring-no-properties (point) prompt-end)))))
 
-(defun comint-histories--history-file (history)
-  "Return the history-file for HISTORY, creating it if it doesn't exist."
-  (let* ((dir (f-join user-emacs-directory "comint-histories"))
+(defun comint-histories--history-filter-function (history)
+  "Return function to be the `comint-input-filter' based on HISTORYs :filters."
+  (lambda (input)
+    (cl-every
+     (lambda (filter)
+       (not (if (functionp filter)
+                (funcall filter input)
+              (string-match-p filter input))))
+     (append comint-histories-global-filters
+             (plist-get (cdr history) :filters)))))
+
+(defun comint-histories--history-file (history &optional dont-create)
+  "Return the history-file for HISTORY, maybe creating it if it doesn't exist."
+  (let* ((dir (or (bound-and-true-p comint-histories-persist-dir)
+                  (f-join user-emacs-directory "comint-histories")))
          (file (f-join dir (car history))))
-    (when (not (f-directory? dir))
+    (when (and (not dont-create) (not (f-directory? dir)))
       (f-mkdir dir))
-    (when (not (f-file? file))
+    (when (and (not dont-create) (not (f-file? file)))
       (f-touch file))
     file))
 
-(defun comint-histories--load-history (history &optional insert)
+(defun comint-histories--load-history-from-disk (history &optional insert)
   "Load the history-ring from HISTORY's persistent file returning it as a list.
 
 If INSERT is non-nil then insert the history into HISTORY's history ring."
   (let* ((history-file (comint-histories--history-file history))
          (history-text (f-read-text history-file 'utf-8))
-         (lines (split-string history-text (format "%c" #x1F) t)))
+         (length (plist-get (cdr history) :length))
+         (lines (seq-take
+                 (split-string history-text (format "%c" #x1F) t)
+                 length)))
     (when insert
-      (dolist (x (reverse lines))
-        (comint-histories--insert-into-history history x)))
+      (let ((comint-input-ring (plist-get (cdr history) :history))
+            (comint-input-filter
+             (comint-histories--history-filter-function history))
+            (comint-input-ring-size (plist-get (cdr history) :length)))
+        (dolist (x (reverse lines))
+          (comint-add-to-input-history x))))
     lines))
 
-(defun comint-histories--save-history (history)
+(defun comint-histories--save-history-to-disk (history)
   "Save HISTORY's history-ring to it's persistent file."
   (let* ((history-file (comint-histories--history-file history))
          (existing-history (ring-elements (plist-get (cdr history) :history)))
-         (loaded-history (comint-histories--load-history history))
+         (loaded-history (comint-histories--load-history-from-disk history))
+         (all-history (append existing-history loaded-history))
          (text ""))
-    (dolist (x (seq-take (delete-dups (append existing-history loaded-history))
-                         (plist-get (cdr history) :length)))
+    (when (plist-get (cdr history) :no-dups)
+      (setq all-history (delete-dups all-history)))
+    (dolist (x (seq-take all-history (plist-get (cdr history) :length)))
       (setq text (concat text (format "%s%c" x #x1F))))
     (f-write-text text 'utf-8 history-file)))
 
-(defun comint-histories--insert-into-history (history input)
-  "Insert INPUT into HISTORY's history-ring.
-
-If HISTORY has its :ltrim or :rtrim props set then trim the leading/trailing
-whitespace from INPUT before processing.  If any of HISTORY's :filter's
-return non-nil when applied to INPUT, then do not insert INPUT into the
-history."
-  (when (plist-get (cdr history) :ltrim)
-    (setq input (replace-regexp-in-string "^[\n ]+" "" input)))
-  (when (plist-get (cdr history) :rtrim)
-    (setq input (replace-regexp-in-string "[\n ]+$" "" input)))
-  (unless (string-empty-p input)
-    (let ((filtered))
-      (catch 'loop
-        (dolist (filter (append comint-histories-global-filters
-                                (plist-get (cdr history) :filters)))
-          (if (functionp filter)
-              (when (funcall filter input)
-                (setq filtered t)
-                (throw 'loop t))
-            (when (string-match-p filter input) ; regexp
-              (setq filtered t)
-              (throw 'loop t)))))
-      (when (not filtered)
-        (let ((ring (plist-get (cdr history) :history)))
-          (when-let ((existing-idx (ring-member ring input)))
-            (ring-remove ring existing-idx))
-          (ring-insert ring input))))))
-
-(defun comint-histories--select-history ()
+(defun comint-histories--select-history (&rest _args)
   "Select a history from `comint-histories--histories'.
 
 A history is selected if all of it's :predicates return non-nil when invoked
-with zero arguments."
+with zero arguments. If a new history is selected then set `comint-input-ring'
+to that histories history ring."
   (let ((selected-history))
     (catch 'loop
       (dolist (history comint-histories--histories)
@@ -227,6 +234,15 @@ with zero arguments."
                         (plist-get (cdr history) :predicates))
           (setq selected-history history)
           (throw 'loop t))))
+    (when (and selected-history
+               (not (equal (car selected-history)
+                           (car comint-histories--last-selected-history))))
+      (setq-local comint-histories--last-selected-history selected-history)
+      (setq-local comint-input-ring (plist-get (cdr selected-history) :history))
+      (setq-local comint-input-ring-size
+                  (plist-get (cdr selected-history) :length))
+      (setq-local comint-input-filter
+                  (comint-histories--history-filter-function selected-history)))
     selected-history))
 
 (defun comint-histories-get-input ()
@@ -271,20 +287,32 @@ Note that indices start at 0."
               (setq comint-histories--histories (cdr padded))
               (mapcar #'car comint-histories--histories))))))))
 
-(defun comint-histories--process-comint-input (&rest _)
-  "Process the current comint input buffer, potentially adding it to a history.
-
-This function is used as advice aroung `comint-send-input' when
-`comint-histories-mode' is enabled."
-  (when-let ((history (comint-histories--select-history)))
-    (let ((input (comint-histories-get-input)))
-      (comint-histories--insert-into-history history input))))
-
-(defun comint-histories--save-histories ()
+(defun comint-histories--save-histories-to-disk ()
   "Save persistent histories in `comint-histories--histories' to disk."
   (dolist (history comint-histories--histories)
     (when (plist-get (cdr history) :persist)
-      (comint-histories--save-history history))))
+      (comint-histories--save-history-to-disk history))))
+
+(defun comint-histories--before-add-to-comint-input-ring (args)
+  "Advise function to run before `comint-add-to-input-history'.
+
+Uses the most recently selected history as the history. Trims the input if the
+:ltrim or :rtrim history options are set. If the :no-dups option is set then
+removes duplicate items from `comint-input-ring'."
+  (if-let ((history comint-histories--last-selected-history)
+           (cmd (car args)))
+      (let ((ltrim (plist-get (cdr history) :ltrim))
+            (rtrim (plist-get (cdr history) :rtrim))
+            (no-dups (plist-get (cdr history) :no-dups)))
+        (when ltrim
+          (setq cmd (replace-regexp-in-string "^[\n\r ]+" "" cmd)))
+        (when rtrim
+          (setq cmd (replace-regexp-in-string "[\n\r ]+$" "" cmd)))
+        (when no-dups
+          (while-let ((idx (ring-member comint-input-ring cmd)))
+            (ring-remove comint-input-ring idx)))
+        (list cmd))
+    args))
 
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
@@ -293,11 +321,17 @@ This function is used as advice aroung `comint-send-input' when
   :require 'comint-histories
   (if comint-histories-mode
       (progn
+        (add-hook 'comint-mode-hook #'comint-histories--select-history)
         (advice-add 'comint-send-input :before
-                    #'comint-histories--process-comint-input)
-        (add-hook 'kill-emacs-hook #'comint-histories--save-histories))
-    (advice-remove 'comint-send-input #'comint-histories--process-comint-input)
-    (remove-hook 'kill-emacs-hook #'comint-histories--save-histories)))
+                    #'comint-histories--select-history)
+        (advice-add 'comint-add-to-input-history :filter-args
+                    #'comint-histories--before-add-to-comint-input-ring)
+        (add-hook 'kill-emacs-hook #'comint-histories--save-histories-to-disk))
+    (remove-hook 'comint-mode-hook #'comint-histories--select-history)
+    (advice-remove 'comint-send-input #'comint-histories--select-history)
+    (advice-remove 'comint-add-to-input-history
+                   #'comint-histories--before-add-to-comint-input-ring)
+    (remove-hook 'kill-emacs-hook #'comint-histories--save-histories-to-disk)))
 
 (provide 'comint-histories)
 
