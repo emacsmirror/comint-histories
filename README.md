@@ -56,6 +56,9 @@ Usage: (comint-histories-add-history history-name
 :persist       If non-nil, then save and load the history to/from a file.
                Defaults to T.
 
+:defer-load    If non-nil, then don't load the history from disk until it is
+               selected. Only relevant to persistent histories. Defaults to T.
+
 :length        Maximum length of the history ring. Defaults to 100.
 
 :no-dups       Do not allow duplicate entries from entering the history. When
@@ -71,8 +74,8 @@ Usage: (comint-histories-add-history history-name
 If a history with name NAME does not already exist in
 `comint-histories--histories', then the new one will be added to the end of
 `comint-histories--histories' (giving it lowest selection precedence), and it's
-history file will be loaded if :persist is non-nil.  Otherwise, if a history
-with name NAME does already exist in `comint-histories--histories', then it's
+history file will be loaded if :persist is non-nil. Otherwise, if a history with
+name NAME does already exist in `comint-histories--histories', then it's
 settings will be updated to the new definition, but it's existing history ring
 will not be updated other than resizing it to the new :length.
 
