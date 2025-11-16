@@ -168,11 +168,13 @@ Here is a modified version of the authors current configuration for comint-histo
   (comint-histories-add-history gdb
     :predicates '((lambda () (string-match-p "^(gdb)" (comint-histories-get-prompt))))
     :length 2000
+    :reselect-after t
     :no-dups t)
 
   (comint-histories-add-history python
     :predicates '((lambda () (or (derived-mode-p 'inferior-python-mode)
                                  (string-match-p "^>>>" (comint-histories-get-prompt)))))
+    :reselect-after t
     :length 2000)
 
   (comint-histories-add-history ielm
