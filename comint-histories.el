@@ -339,7 +339,7 @@ removes duplicate items from `comint-input-ring'."
     args))
 
 (defun comint-histories--around-comint-send-input (orig-fn &rest args)
-  "Advise function to run around `comint-add-to-input-history'."
+  "Advise function to run around `comint-send-input'."
   (comint-histories--select-history)
   (apply orig-fn args)
   (when (plist-get (cdr comint-histories--last-selected-history) :reselect-after)
