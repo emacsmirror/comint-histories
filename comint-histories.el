@@ -1,6 +1,6 @@
 ;;; comint-histories.el --- Many comint histories -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2025 Nicholas Hubbard <nicholashubbard@posteo.net>
+;; Copyright (C) 2026 Nicholas Hubbard <nicholashubbard@posteo.net>
 ;;
 ;; Licensed under the same terms as Emacs and under the MIT license.
 
@@ -11,7 +11,7 @@
 ;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
 ;; Version: 2.2
 ;; Created: 2025-01-02
-;; By: Nicholas Hubbard <nicholashubbard@posteo.net>
+;; By: Nicholas B. Hubbard <nicholashubbard@posteo.net>
 ;; Keywords: convenience, processes, terminals
 
 ;;; Commentary:
