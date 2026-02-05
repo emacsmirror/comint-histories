@@ -1,6 +1,6 @@
 ;;; comint-histories.el --- Many comint histories -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2026 Nicholas Hubbard <nicholashubbard@posteo.net>
+;; Copyright (C) 2026 Nicholas B. Hubbard <nicholashubbard@posteo.net>
 ;;
 ;; Licensed under the same terms as Emacs and under the MIT license.
 
