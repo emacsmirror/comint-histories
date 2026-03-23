@@ -69,10 +69,10 @@ Usage: (comint-histories-add-history history-name
                 the history after a call to `comint-send-input'. Defaults to
                 NIL.
 
-:rtrim          If non-nil, then trim beginning whitespace from the input before
+:ltrim          If non-nil, then trim beginning whitespace from the input before
                 adding attempting to add it to the history. Defaults to T.
 
-:ltrim          If non-nil, then trim ending whitespace from the input before
+:rtrim          If non-nil, then trim ending whitespace from the input before
                 attempting to add it to the history. Defaults to T.
 
 If a history with name NAME does not already exist in
