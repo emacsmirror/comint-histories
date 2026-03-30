@@ -8,8 +8,8 @@
 
 ;; Author: Nicholas Hubbard <nicholashubbard@posteo.net>
 ;; URL: https://github.com/NicholasBHubbard/comint-histories
-;; Package-Requires: ((emacs "25.1") (f "0.21.0"))
-;; Version: 2.2
+;; Package-Requires: ((emacs "29.1") (f "0.21.0"))
+;; Version: 2.3
 ;; Created: 2025-01-02
 ;; By: Nicholas B. Hubbard <nicholashubbard@posteo.net>
 ;; Keywords: convenience, processes, terminals
@@ -46,6 +46,12 @@
 
 (defvar-local comint-histories--last-selected-history nil
   "Internal variable to keep track of the buffers selected history.")
+
+(defvar-local comint-histories--pending-reselect nil
+  "Non-nil when a history reselection is pending after process output.")
+
+(defvar-local comint-histories--reselect-timer nil
+  "Timer for fallback reselection when no process output arrives.")
 
 (defvar comint-histories--histories nil
   "Internal alist of plists containing all defined histories.")
@@ -338,12 +344,32 @@ removes duplicate items from `comint-input-ring'."
         (list cmd))
     args))
 
+(defun comint-histories--do-pending-reselect ()
+  "Perform a pending reselection if one is active in the current buffer."
+  (when comint-histories--pending-reselect
+    (setq-local comint-histories--pending-reselect nil)
+    (when (timerp comint-histories--reselect-timer)
+      (cancel-timer comint-histories--reselect-timer)
+      (setq-local comint-histories--reselect-timer nil))
+    (comint-histories--select-history)))
+
 (defun comint-histories--around-comint-send-input (orig-fn &rest args)
   "Advise function to run around `comint-send-input'."
   (comint-histories--select-history)
   (apply orig-fn args)
   (when (plist-get (cdr comint-histories--last-selected-history) :reselect-after)
-    (comint-histories--select-history)))
+    (setq-local comint-histories--pending-reselect t)
+    (let ((buf (current-buffer)))
+      (setq-local comint-histories--reselect-timer
+                  (run-with-timer 0.5 nil
+                                  (lambda ()
+                                    (when (buffer-live-p buf)
+                                      (with-current-buffer buf
+                                        (comint-histories--do-pending-reselect)))))))))
+
+(defun comint-histories--output-filter (_output)
+  "Reselect history after process output when a reselection is pending."
+  (comint-histories--do-pending-reselect))
 
 (define-minor-mode comint-histories-mode
   "Toggle `comint-histories-mode'."
@@ -357,12 +383,16 @@ removes duplicate items from `comint-input-ring'."
                     #'comint-histories--around-comint-send-input)
         (advice-add 'comint-add-to-input-history :filter-args
                     #'comint-histories--before-add-to-comint-input-ring)
+        (add-hook 'comint-output-filter-functions
+                  #'comint-histories--output-filter)
         (add-hook 'kill-emacs-hook #'comint-histories--save-histories-to-disk))
     (remove-hook 'comint-mode-hook #'comint-histories--select-history)
     (advice-remove 'comint-send-input
                    #'comint-histories--around-comint-send-input)
     (advice-remove 'comint-add-to-input-history
                    #'comint-histories--before-add-to-comint-input-ring)
+    (remove-hook 'comint-output-filter-functions
+                 #'comint-histories--output-filter)
     (remove-hook 'kill-emacs-hook #'comint-histories--save-histories-to-disk)))
 
 (provide 'comint-histories)
